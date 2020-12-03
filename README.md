@@ -1,1 +1,1 @@
-# gl-vis-playground
+# gl-playground
