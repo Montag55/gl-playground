@@ -34,4 +34,4 @@ add_executable(triangle
 target_link_libraries(triangle ${LIBRARIES})
 
 # copy shaders
-file(COPY shaders DESTINATION shaders)
+file(COPY shaders DESTINATION .)
