@@ -39,6 +39,18 @@ class TriangleApp : public Application {
     glNamedBufferData(m_vbo, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
   }
 
+  ~TriangleApp() {
+    if (glIsBuffer(m_vbo)) {
+      glDeleteBuffers(1, &m_vbo);
+    }
+    if (glIsVertexArray(m_vao)) {
+      glDeleteVertexArrays(1, &m_vao);
+    }
+    if (glIsProgram(m_program)) {
+      glDeleteProgram(m_program);
+    }
+  }
+
   bool draw() const override {
     Application::draw();
     glUseProgram(m_program);
