@@ -32,9 +32,9 @@ class TriangleApp : public Application {
 
     // setup vertices
     std::vector<Vertex> vertices = {
-        Vertex{glm::vec2{-1.0, -1.0}, glm::vec4{1.0, 0.0, 0.0, 1.0}},
-        Vertex{glm::vec2{1.0, -1.0}, glm::vec4{0.0, 1.0, 0.0, 1.0}},
-        Vertex{glm::vec2{0.0, 1.0}, glm::vec4{0.0, 0.0, 1.0, 1.0}},
+        Vertex{glm::vec2{-0.5, -0.5}, glm::vec4{1.0, 0.0, 0.0, 1.0}},
+        Vertex{glm::vec2{0.5, -0.5}, glm::vec4{0.0, 1.0, 0.0, 1.0}},
+        Vertex{glm::vec2{0.0, 0.5}, glm::vec4{0.0, 0.0, 1.0, 1.0}},
     };
     glNamedBufferData(m_vbo, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
   }
@@ -54,6 +54,8 @@ class TriangleApp : public Application {
   bool draw() const override {
     Application::draw();
     glUseProgram(m_program);
+    auto model = glm::scale(glm::mat4{1.0f}, glm::vec3{0.5f});
+    gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "transform"), model);
     glBindVertexArray(m_vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     return true;
