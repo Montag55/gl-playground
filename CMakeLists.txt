@@ -24,14 +24,24 @@ include_directories(src)
 
 set(LIBRARIES ${OPENGL_LIBRARIES} glfw)
 
-add_executable(triangle
+add_executable(graph
     external/glad/src/glad.c
     src/application.cpp
     src/gl/program.cpp
+    src/utils.hpp
     src/gl/shader.cpp
-    src/triangle.cpp
-)
-target_link_libraries(triangle ${LIBRARIES})
+    src/graph.cpp)
+target_link_libraries(graph ${LIBRARIES})
+
+file(GLOB_RECURSE SHADERFILES  ${CMAKE_BINARY_DIR}/shaders/*)
+list(LENGTH SHADERFILES RES_LEN)
+message("[Custom] Cleaning up old shader data")
+
+if(RES_LEN GREATER 0)
+    message("[Custom] Removing old shader data")
+    file (REMOVE ${SHADERFILES})
+endif()
 
 # copy shaders
+message("[Custom] Copying shader data")
 file(COPY shaders DESTINATION .)
