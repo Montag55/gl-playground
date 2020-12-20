@@ -6,11 +6,10 @@ uniform int num_attributes;
 
 layout(location = 0) in float in_id;
 layout(location = 1) in float in_attribute_index;
-layout(location = 2) in float in_axis_pos;
-layout(location = 3) in vec2 in_from_range;
-layout(location = 4) in vec2 in_to_range;
+layout(location = 2) in vec2 in_from_range;
+layout(location = 3) in vec2 in_to_range;
 
-layout(location = 0) out vec4 v_color;
+layout(location = 0) out vec4 vs_color;
 
 layout(std430, binding = 0) buffer dataBuffer {
 	float values[];
@@ -18,6 +17,10 @@ layout(std430, binding = 0) buffer dataBuffer {
 
 layout(std430, binding = 1) buffer colorBuffer {
 	vec4 colors[];
+};
+
+layout(std430, binding = 2) buffer attributeBuffer {
+	float attribute_coords[];
 };
 
 
@@ -30,8 +33,8 @@ void main() {
 	float _value = values[_dataIndex];
 	float _norm = remap(_value, in_from_range, in_to_range);
 	
-	gl_Position = transform * vec4(vec2(in_axis_pos, _norm), 0.0, 1.0);
+	gl_Position = transform * vec4(vec2(attribute_coords[int(in_attribute_index)], _norm), 0.0, 1.0);
 	
 	// pass-through color
-	v_color = colors[_dataIndex];
+	vs_color = colors[int(in_id)];
 }

@@ -36,7 +36,7 @@ namespace Utils{
 
     inline void readData(std::vector<float>& data, std::string path){
 		/*
-		 * Reads textfile specified path then formats lines 
+		 * Reads textfile specified by path then formats lines 
 		 * and writes float data into the input data vector
 		 */
 

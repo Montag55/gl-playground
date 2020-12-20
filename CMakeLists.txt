@@ -24,11 +24,10 @@ include_directories(src)
 
 set(LIBRARIES ${OPENGL_LIBRARIES} glfw)
 
-add_executable(graph
+add_executable( graph
     external/glad/src/glad.c
     src/application.cpp
     src/gl/program.cpp
-    src/utils.hpp
     src/gl/shader.cpp
     src/graph.cpp)
 target_link_libraries(graph ${LIBRARIES})
