@@ -15,6 +15,7 @@
 
 #include <gl/program.hpp>
 #include <gl/shader.hpp>
+#include <utils.hpp>
 
 class Application {
  public:
@@ -63,6 +64,7 @@ class Application {
   glm::vec2 m_screen_size;
   glm::uvec2 m_resolution;
   glm::dvec2 m_mouse_pos;
+  bool m_mouse_buttons[3] = {false, false, false};
 };
 
 void GLAPIENTRY debugMessageCallback(GLenum source,

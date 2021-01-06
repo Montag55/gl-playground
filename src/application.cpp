@@ -102,7 +102,25 @@ void Application::on_key(int key, int scancode, int action, int mods) {
 
 void Application::on_mouse_move(double dx, double dy) {}
 
-void Application::on_mouse_button(int button, int action, int mods) {}
+void Application::on_mouse_button(int button, int action, int mods) {
+    switch (button) {
+        case GLFW_MOUSE_BUTTON_LEFT:
+            if(action == GLFW_PRESS || action == GLFW_RELEASE)
+                m_mouse_buttons[Left] = action;
+            break;
+        case GLFW_MOUSE_BUTTON_MIDDLE:
+            if(action == GLFW_PRESS || action == GLFW_RELEASE)
+                m_mouse_buttons[Middle] = action;
+            break;
+        case GLFW_MOUSE_BUTTON_RIGHT:
+            if(action == GLFW_PRESS || action == GLFW_RELEASE)
+                m_mouse_buttons[Right] = action;
+            break;
+        default:
+            spdlog::debug("Unreported Mouse Button Pressed");
+            break;
+    }
+}
 
 void Application::on_scroll(double x, double y) {}
 
