@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <structs.hpp>
 #include <glm/glm.hpp>
+#include <spdlog/spdlog.h>
 
 namespace Utils{
     template<typename T>
@@ -19,24 +20,33 @@ namespace Utils{
 		return to.x + (value - from.x) * (to.y - to.x) / (from.y - from.x);
 	}
 
-	inline std::vector<std::string> splitString(const std::string& s,  const char& delimiter){
+	inline std::vector<std::string> splitString(const std::string& s, const char& delimiter, bool exclude_first, bool exclude_last) {
 		size_t last = 0;
 		size_t next = 0;
 		std::vector<std::string> result;
-
+		
 		// find delimiter and push substring between them into vector
 		while ((next = s.find(delimiter, last)) != std::string::npos) {
+			// skip first entry
+			if (exclude_first) {
+                exclude_first = false;
+                last = next + 1;
+				continue;
+			}
+				
 			result.push_back(s.substr(last, next - last));
 			last = next + 1;
 		}
-	
+		
 		// push last substring not followed by delimiter into vector
-		// result.push_back(s.substr(last, next - last));
+        if (!exclude_last) {  
+			result.push_back(s.substr(last, next - last));
+		}
 	
 		return result;
 	}
 
-    inline void readData(std::vector<float>& data, std::string path){
+    inline void readData(std::vector<float>& data, const std::string& path, const bool& exclude_first, const bool& exclude_last){
 		/*
 		 * Reads textfile specified by path then formats lines 
 		 * and writes float data into the input data vector
@@ -45,12 +55,7 @@ namespace Utils{
 		std::ifstream file(path);
 		std::string line;
 		while (std::getline(file, line)) {
-			auto split = splitString(line, ',');
-			
-			// just skip invalid data for testing
-			if (split.size() != 4) {
-				continue;
-			}
+            auto split = splitString(line, ',', exclude_first, exclude_last);
 			
 			for (const auto& i : split) {
 				data.push_back(std::stof(i));
@@ -59,12 +64,11 @@ namespace Utils{
 	}
 
 	inline std::vector<float> getMaxValues(const std::vector<float>& data, const int& num) {
-		std::vector<float> max(4, 0);
+		std::vector<float> max(num, 0);
 		for (int i = 0; i < data.size(); i+=num) {
-			max[0] = glm::max(data[i], max[0]);
-			max[1] = glm::max(data[i+1], max[1]);
-			max[2] = glm::max(data[i+2], max[2]);
-			max[3] = glm::max(data[i+3], max[3]);
+			for (int j = 0; j < num; j++) {
+				max[j] = glm::max(data[i+j], max[j]);
+			}
 		}
 		return max;
 	}
@@ -72,10 +76,9 @@ namespace Utils{
 	inline std::vector<float> getMinValues(const std::vector<float>& data, const int& num) {
 		std::vector<float> min = getMaxValues(data, num);
 		for (int i = 0; i < data.size(); i+=num) {
-			min[0] = glm::min(data[i], min[0]);
-			min[1] = glm::min(data[i+1], min[1]);
-			min[2] = glm::min(data[i+2], min[2]);
-			min[3] = glm::min(data[i+3], min[3]);
+            for (int j = 0; j < num; j++) { 
+				min[j] = glm::min(data[i+j], min[j]);
+			}
 		}
 		return min;
 	}

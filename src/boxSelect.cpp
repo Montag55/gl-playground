@@ -123,10 +123,6 @@ bool BoxSelect::registerTool() {
     
     return true;
 }
-
-void BoxSelect::updateSelectionColors() const {
-
-}
   
 std::vector<int> BoxSelect::checkIntersection() const{
     // list of selected line ID's - list to remove duplicates
@@ -145,15 +141,11 @@ std::vector<int> BoxSelect::checkIntersection() const{
     };
         
     // check every line if it is inside AABB - later maybe BSP
-    for (unsigned int i = 0; i < m_linkedApp->getVertecies()->size() - 1; i++) {
-      
-        // skip last vertex of line segment since its included in prior segment
-        if(i % m_linkedApp->getAxis()->size() == m_linkedApp->getAxis()->size() - 1)
-            continue;
-        
+    for (unsigned int i = 0; i < m_linkedApp->getIndicies()->size() - 1; i+=2) {
+              
         // Get Vertecies of line segment
-        Vertex v1  = (*m_linkedApp->getVertecies())[i];
-        Vertex v2  = (*m_linkedApp->getVertecies())[i + 1];
+        Vertex v1 = (*m_linkedApp->getVertecies())[(*m_linkedApp->getIndicies())[i]];
+        Vertex v2 = (*m_linkedApp->getVertecies())[(*m_linkedApp->getIndicies())[i + 1]];
         
         auto x1 = (*m_linkedApp->getAxis())[v1.attIndx];
         auto y1 = Utils::remap((*m_linkedApp->getData())[ m_linkedApp->getAxis()->size() * (int)v1.id + (int)v1.attIndx], (*m_linkedApp->getRanges())[(int)v1.attIndx], glm::vec2(-1,1));
@@ -173,7 +165,7 @@ std::vector<int> BoxSelect::checkIntersection() const{
             // if they are, no need to check the other line verts
             if (Utils::insideAABB(glm::vec2(x1, y1), selectionAABB) || Utils::insideAABB(glm::vec2(x2, y2), selectionAABB)) {
                 selected.push_back(v1.id);
-                i += m_linkedApp->getAxis()->size() - v1.attIndx - 1;
+                //i += m_linkedApp->getAxis()->size() - v1.attIndx - 1;
                 continue;
             }
 
@@ -189,7 +181,7 @@ std::vector<int> BoxSelect::checkIntersection() const{
             auto inter_l = Utils::bezier(ratio_l, glm::vec2(x1, y1), p1, p2, glm::vec2(x2, y2));
             if (inter_l.y < selectionAABB.c1.y && inter_l.y > selectionAABB.c2.y ) {
                 selected.push_back(v1.id);
-                i += m_linkedApp->getAxis()->size() - v1.attIndx - 1;
+                //i += m_linkedApp->getAxis()->size() - v1.attIndx - 1;
                 continue;
             }
 
@@ -199,7 +191,7 @@ std::vector<int> BoxSelect::checkIntersection() const{
             auto inter_r = Utils::bezier(ratio_r, glm::vec2(x1, y1), p1, p2, glm::vec2(x2, y2));
             if (inter_r.y < selectionAABB.c1.y && inter_r.y > selectionAABB.c2.y ) {
                 selected.push_back(v1.id);
-                i += m_linkedApp->getAxis()->size() - v1.attIndx - 1;
+                //i += m_linkedApp->getAxis()->size() - v1.attIndx - 1;
                 continue;
             }
         }

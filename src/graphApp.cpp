@@ -1,13 +1,14 @@
 #include<graphApp.hpp>
 
 GraphApp::GraphApp() : 
-    Application{},
+    Application{}, 
+    m_num_attributes{4},
     m_model{glm::scale(glm::mat4{1.0f}, glm::vec3{0.8f})},
-    m_data{initializeData(4)}, // init for tools
-    m_axis{initializeAxis(4)}, // init for tools
-    m_ranges{initializeRanges(4)}, // init for tools
-    m_boxSelect_tool{ new BoxSelect(this) }, // enable boxSelection tool
-    m_axisDrag_tool{ new AxisDrag(this) } // enable axisDrag tool
+    m_data{initializeData()}, // init for tools
+    m_axis{initializeAxis()},  // init for tools
+    m_ranges{initializeRanges()},  // init for tools
+    m_boxSelect_tool{new BoxSelect(this)},  // enable boxSelection tool
+    m_axisDrag_tool{new AxisDrag(this)}     // enable axisDrag tool
 {     
     // setup shader program
     auto vert_shader = gl::load_shader_from_file("shaders/polyline.vert", GL_VERTEX_SHADER);
@@ -15,7 +16,8 @@ GraphApp::GraphApp() :
     auto tes_shader = gl::load_shader_from_file("shaders/polyline.tese", GL_TESS_EVALUATION_SHADER);
     auto frag_shader = gl::load_shader_from_file("shaders/polyline.frag", GL_FRAGMENT_SHADER);
     m_polyline_program = gl::create_program({vert_shader, tcs_shader, tes_shader, frag_shader});
-        
+    
+    
     // init index stuff
     initializeIndexBuffer();
     initializeColor();        
@@ -73,11 +75,13 @@ bool GraphApp::draw() const {
     return true;
 }
     
-std::vector<float> GraphApp::initializeData(const int& num_attributes) {
+std::vector<float> GraphApp::initializeData() {
     std::vector<float> tmp;
     
-    Utils::readData(tmp, "../../iris.txt");
-   
+    Utils::readData(tmp, "../../iris.txt", false, true);
+    // Utils::readData(tmp, "../../sea-ice-extent-annually.csv", true, false);
+    // Utils::readData(tmp, "../../sea-ice-extent.csv", true, false);
+
     if (tmp.empty()) {
 		throw std::runtime_error("Failed to initialze data!");
 	}
@@ -85,15 +89,15 @@ std::vector<float> GraphApp::initializeData(const int& num_attributes) {
     return tmp;
 }
 
-std::vector<glm::vec2> GraphApp::initializeRanges(const int& num_attributes) {
+std::vector<glm::vec2> GraphApp::initializeRanges() {
     std::vector<glm::vec2> tmp;
-    auto max = Utils::getMaxValues(m_data, num_attributes);
-    auto min = Utils::getMinValues(m_data, num_attributes);
+    auto max = Utils::getMaxValues(m_data, m_num_attributes);
+    auto min = Utils::getMinValues(m_data, m_num_attributes);
 
-    for(int i = 0; i < num_attributes; i++) {
+    for (int i = 0; i < m_num_attributes; i++) {
         tmp.push_back(glm::vec2(min[i], max[i]));
     }
-
+    
     return tmp;
 }
     
@@ -113,10 +117,10 @@ void GraphApp::initializeColor() {
     }
 }
 
-std::vector<float> GraphApp::initializeAxis(const int& num_attributes) {
-    std::vector<float> tmp;
-    for (int i = 0; i < num_attributes; i++) {
-        tmp.push_back(Utils::remap((float)i / (num_attributes - 1), glm::vec2{0,1}, glm::vec2{-1,1}));
+std::vector<float> GraphApp::initializeAxis() {
+    std::vector<float> tmp(m_num_attributes, 0);
+    for (int i = 0; i < m_num_attributes; i++) {
+        tmp[i] = Utils::remap((float)i / (m_num_attributes - 1), glm::vec2{0,1}, glm::vec2{-1,1});
     }
     return tmp;
 }
@@ -191,7 +195,7 @@ void GraphApp::initializeIndexBuffer() {
     // in twice except for first and last of each line 
     for (unsigned short i = 0; i < m_data.size(); i++) {
         m_indicies.push_back(i);
-        if (i %  m_axis.size() != 0 && i % m_axis.size() != m_axis.size() - 1) {
+        if (i % m_axis.size() != 0 && i % m_axis.size() != m_axis.size() - 1) {
             m_indicies.push_back(i);
         }
     }
@@ -337,6 +341,10 @@ const std::vector<Vertex>* GraphApp::getVertecies(){
 
 const std::vector<float>* GraphApp::getAxis() {
     return &m_axis;
+}
+
+const std::vector<unsigned short>* GraphApp::getIndicies() {
+    return &m_indicies;
 }
 
 const std::vector<float>* GraphApp::getData() {

@@ -71,13 +71,13 @@ bool AxisDrag::checkSelection() {
     auto ss_pos = m_mouse_model * glm::vec4(glm::vec2(x,y), 0, 1);
     
     std::vector<bool> current (m_axis_status.size(), false);
-
+    
     // check for intersection with multiple axis
     bool result = false;
     for (int i = 0; i < m_axis_status.size(); i++) {
         AABB axis_rect = AABB {
-            m_vertices[i * m_axis_status.size()].pos,    // upper left
-            m_vertices[i * m_axis_status.size() + 3].pos // lower right 
+            m_vertices[i * 4].pos,    // upper left
+            m_vertices[i * 4 + 3].pos // lower right 
         };
         
         if (Utils::insideAABB(ss_pos, axis_rect)) {
@@ -100,7 +100,7 @@ bool AxisDrag::checkSelection() {
 
 void AxisDrag::updateColors() {
     for (int i = 0; i < m_vertices.size(); i++) {
-        m_vertices[i].colorIndx = m_axis_status[(int)(i / m_axis_status.size())];
+        m_vertices[i].colorIndx = m_axis_status[(int)(i / 4)];
     }
 
     // sub only the 4 verts of selected axis
@@ -180,12 +180,12 @@ void AxisDrag::initializeVertexBuffers() {
     glNamedBufferData(m_vbo, Utils::vectorsizeof(m_vertices), m_vertices.data(), GL_DYNAMIC_DRAW);
 }
 
-void AxisDrag::initializeIndexBuffer() {        
+void AxisDrag::initializeIndexBuffer() {
     for (unsigned short i = 0; i < m_vertices.size(); i++) {
         m_indicies.push_back(i);
         
         // create degenerate triangles between quads
-        if((i % 4 == 3 || i % 4 == 0) && i != 0 && i != m_vertices.size() - 1)
+        if ((i % 4 == 3 || i % 4 == 0) && i != 0 && i != m_vertices.size() - 1)
             m_indicies.push_back(i);
     }
     

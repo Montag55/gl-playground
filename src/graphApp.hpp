@@ -14,8 +14,11 @@
 class BoxSelect;
 class AxisDrag;
 
-class GraphApp : public Application {
-public:
+class GraphApp : 
+    public Application, 
+    public std::enable_shared_from_this<GraphApp> 
+{
+ public:
     GraphApp();
     ~GraphApp();
 	bool draw() const override;
@@ -23,15 +26,16 @@ public:
     void updateAxis(const std::vector<float>& axis) const;
     void updateVertexIndicies(const std::vector<int>& order) const;
     const std::vector<Vertex>* getVertecies();
+    const std::vector<unsigned short>* getIndicies();
     const std::vector<float>* getAxis();
     const std::vector<float>* getData();
     const glm::mat4& getModel();
     const std::vector<glm::vec2>* getRanges();
 
 private: 
-	std::vector<float> initializeData(const int& num_attributes);
-	std::vector<float> initializeAxis(const int& attribute_number);
-    std::vector<glm::vec2> initializeRanges(const int& num_attributes);
+	std::vector<float> initializeData();
+    std::vector<float> initializeAxis();
+    std::vector<glm::vec2> initializeRanges();
 	void initializeColor();
 	void initializeVertexBuffers();
 	void initializeStorageBuffers();
@@ -52,6 +56,7 @@ protected:
     GLuint m_attribute_ssbo;
     GLuint m_range_ssbo;
     
+    int m_num_attributes;
     std::vector<float> m_axis;
     std::vector<float> m_data;
     std::vector<Vertex> m_vertices;

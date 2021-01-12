@@ -21,7 +21,6 @@ public:
     void clearSelection() const;
     bool draw() const override;
     bool registerTool() override;
-    void updateSelectionColors() const;
     std::vector<int> checkIntersection() const;
     
     void stopSelection_callback() const;
