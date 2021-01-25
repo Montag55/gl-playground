@@ -74,8 +74,8 @@ bool GraphApp::draw() const {
     
     // both share same ssbos
     m_timeSeries_tool->draw();
-    drawPolyLines();        
-    
+    drawPolyLines();
+        
     m_boxSelect_tool->draw();
 
     return true;
@@ -310,19 +310,22 @@ void GraphApp::mouseEventListener() const {
                 m_boxSelect_tool->updateSelection_callback(current.pos); 
             break;
         case Release:
-            // clear boxselection tool here
-            m_boxSelect_tool->stopSelection_callback();
+            // clear boxselection tool here and update all time expansions
+            if (!m_axisDrag_tool->updateSelection(m_prevMouseState.pos, current.pos)) 
+                m_boxSelect_tool->stopSelection_callback();
+            else
+                m_timeSeries_tool->updateSelections();
+                  
             break;
         case Double_Click:
             // update time-series-expansion tool here
-            m_timeSeries_tool->updateSelection(current.pos);
+            m_timeSeries_tool->checkSelection(current.pos);
             break;
         default:
             // check if mouse over axis
             m_axisDrag_tool->checkSelection();
             break;
     }
-            
     ptr->m_prevMouseState = current;
 }
 
@@ -453,6 +456,10 @@ const GraphApp* GraphApp::getPtr() {
 
 const GLuint* GraphApp::getVAO() {
     return &m_vao;
+}
+
+const GLuint* GraphApp::getAttribute_SSBO() {
+    return &m_attribute_ssbo;
 }
 
 int main() {

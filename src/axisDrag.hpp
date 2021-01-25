@@ -26,7 +26,6 @@ private:
     GLuint m_vao;
     GLuint m_vbo;
     GLuint m_ibo;
-	GLuint m_color_ssbo;
 
 	std::vector<AxisVertex> m_vertices;
 	std::vector<unsigned short> m_indicies;

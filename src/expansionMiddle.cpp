@@ -25,7 +25,6 @@ ExpansionMiddle::~ExpansionMiddle() {
     }
 }
 
-
 void ExpansionMiddle::initializeIndexBuffers() {
     glGenBuffers(1, &m_ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
@@ -35,6 +34,11 @@ void ExpansionMiddle::initializeIndexBuffers() {
 }
 
 void ExpansionMiddle::updateAxis(const std::vector<int>& axisIndicies) const {
+    // return early if there is no actuall update
+    auto prev = std::vector<int>{m_order.begin() + 1, m_order.end() - 1};
+    if (prev == axisIndicies)
+        return;
+    
     // gets called whenever axis is added or removed
     // ToDo: sort out axis ordring -> keed left and right as start and end
     ExpansionMiddle* ptr = const_cast<ExpansionMiddle*>(this);

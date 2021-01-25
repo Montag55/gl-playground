@@ -19,6 +19,10 @@ TimeSeries::TimeSeries(GraphApp* app):
     
     vert_shader = gl::load_shader_from_file("shaders/timeseriesmiddle.vert", GL_VERTEX_SHADER);
     m_middle_program = gl::create_program({vert_shader, tcs_shader, tes_shader, frag_shader});
+    
+    vert_shader = gl::load_shader_from_file("shaders/expansion_active.vert", GL_VERTEX_SHADER);
+    frag_shader = gl::load_shader_from_file("shaders/axis.frag", GL_FRAGMENT_SHADER);
+    m_addVisualizer_program = gl::create_program({vert_shader, frag_shader});
 
     
     // model relative to screen space
@@ -62,7 +66,7 @@ TimeSeries::~TimeSeries() {
     }
 }
 
-bool TimeSeries::updateSelection(const glm::vec2& cursor) {
+bool TimeSeries::checkSelection(const glm::vec2& cursor) {
     // convert mouse position to   
     float x = Utils::remap(cursor.x, glm::vec2(0, m_linkedApp->resolution().x), glm::vec2(-1, 1));
     float y = Utils::remap(cursor.y, glm::vec2(0, m_linkedApp->resolution().y), glm::vec2(-1, 1));
@@ -124,6 +128,14 @@ bool TimeSeries::updateSelection(const glm::vec2& cursor) {
     return true;
 }
 
+void TimeSeries::updateSelections() {
+    // update middle part of all expansions to updat contained axis
+    for (const auto& entry : m_expansions) {
+        entry.middle->updateAxis(entry.middleAxisIndicies);
+        entry.addVisualizer->setActive(false);
+    }
+}
+
 void TimeSeries::createEntry(TimeExpansion& entry) const{       
     setEntryCoords(entry);
     
@@ -137,6 +149,13 @@ void TimeSeries::createEntry(TimeExpansion& entry) const{
         m_linkedApp->getData()->size() / m_linkedApp->getAxis()->size() / m_num_timeAxis,
         m_linkedApp->getAxis()->size(),
         m_middle_program,
+        m_linkedApp
+    );
+
+    entry.addVisualizer = new ExpansionActive(
+        entry.leftAxisIndex, 
+        entry.rightAxisIndex,
+        m_addVisualizer_program,
         m_linkedApp
     );
 
@@ -195,7 +214,8 @@ void TimeSeries::updateEntries() const {
                 
                 // add to middle
                 entry.middleAxisIndicies.push_back(idx);
-                entry.middle->updateAxis(entry.middleAxisIndicies);
+                entry.addVisualizer->setActive(true);
+                // entry.middle->updateAxis(entry.middleAxisIndicies);
                 ptr->updateParentIndicies();
             } 
             else if (it != entry.middleAxisIndicies.end() && // if already in middle
@@ -204,6 +224,8 @@ void TimeSeries::updateEntries() const {
                 
                 // remove from middle
                 entry.middleAxisIndicies.erase(it);
+                entry.addVisualizer->setActive(false);
+                // remove entry when draged outside immidiately
                 entry.middle->updateAxis(entry.middleAxisIndicies);
                 ptr->updateParentIndicies();
             }
@@ -278,6 +300,12 @@ bool TimeSeries::draw() const {
     }
       
     glDepthMask(GL_FALSE);
+
+    // draw all middles before left rights since they use axis ssbo from linked app
+    for (const auto& item : m_expansions) {
+      item.addVisualizer->draw();
+    }
+
 	return true;
 }
 
@@ -344,5 +372,6 @@ void TimeSeries::initializeStorageBuffers() {
 void TimeSeries::deleteEntry(const int& index) {
     auto entry = m_expansions[index];
     delete entry.middle;
+    delete entry.addVisualizer;
     m_expansions.erase(m_expansions.begin() + index);
 }

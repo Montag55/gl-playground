@@ -37,6 +37,7 @@ class GraphApp :
     const std::vector<int>* getAxisOrder();
     const GraphApp* getPtr();
     const GLuint* getVAO();
+    const GLuint* getAttribute_SSBO();
     const int* getNumTimeAxis();
     void updateOrder(const std::vector<int>& order) const;
     void updateExcludedAxis(const std::vector<int>& axis) const;

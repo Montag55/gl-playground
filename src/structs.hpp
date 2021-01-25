@@ -7,6 +7,7 @@
 #include <glad/glad.h>
 #include <variant>
 #include <expansionMiddle.hpp>
+#include <expansionActive.hpp>
 
 const double DOUBLECLICK_TIME_MS = 333;
 
@@ -73,4 +74,5 @@ struct TimeExpansion {
     glm::mat4 view;
     
     ExpansionMiddle* middle; // middle section for this entry
+    ExpansionActive* addVisualizer; // highlighter when adding axis to expansion
 };

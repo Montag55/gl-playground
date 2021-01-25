@@ -19,7 +19,8 @@ public:
 	~TimeSeries();
     bool draw() const override;
     bool registerTool() override;
-    bool updateSelection(const glm::vec2& cursor);
+    bool checkSelection(const glm::vec2& cursor);
+    void updateSelections();
     
 private:
     void createEntry(TimeExpansion& entry) const;
@@ -33,6 +34,7 @@ private:
         
     GLuint m_program;
     GLuint m_middle_program;
+    GLuint m_addVisualizer_program;
     glm::mat4 m_draw_model; // scale of polyline
     glm::mat4 m_mouse_model; // scale of screen to polyine
     glm::mat4 m_view;

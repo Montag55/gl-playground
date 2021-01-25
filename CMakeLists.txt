@@ -34,7 +34,8 @@ add_executable( graph
     src/tool.cpp
     src/timeSeries.cpp
     src/expansionMiddle.cpp
-    src/graphApp.cpp )
+    src/expansionActive.cpp
+    src/graphApp.cpp  )
 target_link_libraries(graph ${LIBRARIES})
 
 file(GLOB_RECURSE SHADERFILES  ${CMAKE_BINARY_DIR}/shaders/*)
