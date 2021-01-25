@@ -16,7 +16,7 @@ AxisDrag::AxisDrag(GraphApp* app) :
         1.0f / m_linkedApp->getModel()[0][0], 
         1.0f / m_linkedApp->getModel()[1][1], 
         1.0f / m_linkedApp->getModel()[2][2]}
-    );;    
+    );    
     
     // x coord span of axis rectangle
     m_thickness = 0.05f;
@@ -126,7 +126,7 @@ bool AxisDrag::updateSelection(const glm::vec2& prev, const glm::vec2& current) 
     // re-sort axis since order might have changed
     if (Utils::sortWithIndecies(axis, m_order)) {
         // if order change, update vertices
-        m_linkedApp->updateVertexIndicies(m_order);
+        m_linkedApp->updateOrder(m_order);
     }
     
     // update verts (axis_ssbo) and axis (verts for axis rect)

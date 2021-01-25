@@ -20,8 +20,8 @@ private:
 	void initializeVertexBuffers();
 	void initializeIndexBuffer();
 	
-	glm::mat4 m_draw_model;
-	glm::mat4 m_mouse_model;
+	glm::mat4 m_draw_model; // scale of polyline
+	glm::mat4 m_mouse_model; // scale of screen to polyine
     GLuint m_program;
     GLuint m_vao;
     GLuint m_vbo;

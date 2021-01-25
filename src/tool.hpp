@@ -6,7 +6,7 @@ class GraphApp;
 
 class Tool {
 public:
-  Tool(GraphApp* app);
+	Tool(GraphApp* app);
 	virtual bool draw() const = 0;
 	virtual bool registerTool() = 0;
 	void setPriority(int prio);
