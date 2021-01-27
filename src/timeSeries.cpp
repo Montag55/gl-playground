@@ -64,6 +64,12 @@ TimeSeries::~TimeSeries() {
     if (glIsProgram(m_program)) {
         glDeleteProgram(m_program);
     }
+    if (glIsProgram(m_middle_program)) {
+        glDeleteProgram(m_middle_program);
+    } 
+    if (glIsProgram(m_addVisualizer_program)) {
+        glDeleteProgram(m_addVisualizer_program);
+    }
 }
 
 bool TimeSeries::checkSelection(const glm::vec2& cursor) {
@@ -268,11 +274,6 @@ bool TimeSeries::draw() const {
     // now here render that stuff
     glDepthMask(GL_TRUE);
 
-    // draw all middles before left rights since they use axis ssbo from linked app
-    for (const auto& item : m_expansions) {
-      item.middle->draw();
-    }
-
     glUseProgram(m_program);
     
     gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "projection"), m_projection);
@@ -282,7 +283,7 @@ bool TimeSeries::draw() const {
     
     glBindVertexArray(m_vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, m_time_ssbo);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, m_time_ssbo);
     glPatchParameteri(GL_PATCH_VERTICES, 2);
     
     for (const auto& item : m_expansions) {
@@ -303,6 +304,7 @@ bool TimeSeries::draw() const {
 
     // draw all middles before left rights since they use axis ssbo from linked app
     for (const auto& item : m_expansions) {
+      item.middle->draw();
       item.addVisualizer->draw();
     }
 
@@ -363,7 +365,7 @@ void TimeSeries::initializeStorageBuffers() {
         m_timeAxis.push_back(val);
     }
    
-    GLuint time_pos_binding = 3;
+    GLuint time_pos_binding = 4;
     glCreateBuffers(1, &m_time_ssbo);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, time_pos_binding, m_time_ssbo);
     glNamedBufferData(m_time_ssbo, Utils::vectorsizeof(m_timeAxis), m_timeAxis.data(), GL_DYNAMIC_DRAW);

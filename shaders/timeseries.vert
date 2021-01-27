@@ -26,7 +26,7 @@ layout(std430, binding = 2) buffer rangeBuffer {
 	vec2 ranges[];
 };
 
-layout(std430, binding = 3) buffer timeBuffer {
+layout(std430, binding = 4) buffer timeBuffer {
 	float time_coords[];
 };
 
