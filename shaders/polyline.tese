@@ -26,7 +26,7 @@ void main() {
 
 	// compute the actual position on the Bezier line
 	gl_Position = vec4(bezier(gl_TessCoord.x, p0, p1, p2, p3), 1.0);
-
+	
 	// pass-through color
 	tes_color = patch_color;
 }

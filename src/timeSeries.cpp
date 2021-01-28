@@ -12,12 +12,14 @@ TimeSeries::TimeSeries(GraphApp* app):
     m_num_timeAxis{*app->getNumTimeAxis()}
  {
     auto vert_shader = gl::load_shader_from_file("shaders/timeseries.vert", GL_VERTEX_SHADER);
-    auto tcs_shader = gl::load_shader_from_file("shaders/polyline.tesc", GL_TESS_CONTROL_SHADER);
-    auto tes_shader = gl::load_shader_from_file("shaders/polyline.tese", GL_TESS_EVALUATION_SHADER);
+    auto tcs_shader = gl::load_shader_from_file("shaders/timeseries.tesc", GL_TESS_CONTROL_SHADER);
+    auto tes_shader = gl::load_shader_from_file("shaders/timeseries.tese", GL_TESS_EVALUATION_SHADER);
     auto frag_shader = gl::load_shader_from_file("shaders/polyline.frag", GL_FRAGMENT_SHADER);
     m_program = gl::create_program({vert_shader, tcs_shader, tes_shader, frag_shader});
     
     vert_shader = gl::load_shader_from_file("shaders/timeseriesmiddle.vert", GL_VERTEX_SHADER);
+    tcs_shader = gl::load_shader_from_file("shaders/polyline.tesc", GL_TESS_CONTROL_SHADER);
+    tes_shader = gl::load_shader_from_file("shaders/polyline.tese", GL_TESS_EVALUATION_SHADER);
     m_middle_program = gl::create_program({vert_shader, tcs_shader, tes_shader, frag_shader});
     
     vert_shader = gl::load_shader_from_file("shaders/expansion_active.vert", GL_VERTEX_SHADER);
@@ -146,7 +148,7 @@ void TimeSeries::createEntry(TimeExpansion& entry) const{
     setEntryCoords(entry);
     
     // set tilt angle since no '3D'
-    entry.angle = 10.0f;
+    // entry.angle = 10.0f;
     
     // create middle section
     entry.middle = new ExpansionMiddle(
@@ -168,28 +170,34 @@ void TimeSeries::createEntry(TimeExpansion& entry) const{
     // add entry as as expansion
     TimeSeries* ptr = const_cast<TimeSeries*>(this);
     ptr->m_expansions.push_back(entry);
+    
+    // update all entrys
+    updateEntries();
 }
 
 void TimeSeries::setEntryCoords(TimeExpansion& entry) const {
     auto axis = *m_linkedApp->getAxis();
     auto order = *m_linkedApp->getAxisOrder();
     
+    // dynamic rotation dependent on axis distance
+    entry.angle = glm::clamp(45 * glm::distance(axis[entry.leftAxisIndex], axis[entry.rightAxisIndex]) / (2 * m_mouse_model[2][2]), 0.0f, 45.0f);
+    
     // rotate and shift time expansion to align with left axis
     entry.model_left = m_draw_model;
     entry.model_left = glm::translate(entry.model_left, glm::vec3(0.0f, 0.0f, m_mouse_model[2][2]));
-    entry.model_left = glm::rotate(entry.model_left, glm::radians(80.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    entry.model_left = glm::rotate(entry.model_left, glm::radians(90 - entry.angle), glm::vec3(0.0f, 1.0f, 0.0f));
     entry.model_left = glm::translate(entry.model_left, glm::vec3(0.0f, 0.0f, axis[entry.leftAxisIndex]));
-    
+
     // rotate and shift time expansion to align with right axis
     entry.model_right = m_draw_model;
     entry.model_right = glm::translate(entry.model_right, glm::vec3(0.0f, 0.0f, m_mouse_model[2][2]));
-    entry.model_right = glm::rotate(entry.model_right, glm::radians(100.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    entry.model_right = glm::rotate(entry.model_right, glm::radians(90 + entry.angle), glm::vec3(0.0f, 1.0f, 0.0f));
     entry.model_right = glm::translate(entry.model_right, glm::vec3(0.0f, 0.0f, axis[entry.rightAxisIndex]));
 
     // place camera between axis
     entry.view = glm::lookAt(glm::vec3((axis[entry.leftAxisIndex] + axis[entry.rightAxisIndex]) * 0.5f, 0, 0),
-                             glm::vec3((axis[entry.leftAxisIndex] + axis[entry.rightAxisIndex]) * 0.5f, 0, -1),
-                             glm::vec3(0.0f, 1.0f, 0.0f));
+                           glm::vec3((axis[entry.leftAxisIndex] + axis[entry.rightAxisIndex]) * 0.5f, 0, -1),
+                           glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void TimeSeries::updateEntries() const {
@@ -272,14 +280,14 @@ bool TimeSeries::draw() const {
     updateEntries();
    
     // now here render that stuff
-    glDepthMask(GL_TRUE);
-
     glUseProgram(m_program);
+    glDepthMask(GL_TRUE);
     
-    gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "projection"), m_projection);
+    gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "projection"), glm::mat4(1.0f));
     gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "to_range"), glm::vec2(-1, 1));
     glProgramUniform1i(m_program, glGetUniformLocation(m_program, "num_data"), m_linkedApp->getData()->size() / m_num_timeAxis);
     glProgramUniform1i(m_program, glGetUniformLocation(m_program, "num_attrib"), m_linkedApp->getAxis()->size());
+    glProgramUniform1i(m_program, glGetUniformLocation(m_program, "num_times"), m_num_timeAxis);
     
     glBindVertexArray(m_vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
@@ -287,7 +295,7 @@ bool TimeSeries::draw() const {
     glPatchParameteri(GL_PATCH_VERTICES, 2);
     
     for (const auto& item : m_expansions) {
-      gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "view"), glm::mat4(1.0f));
+        gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "view"), glm::mat4(1.0f));
         
         // draw left 
         glProgramUniform1i(m_program, glGetUniformLocation(m_program, "attribute_idx"), item.leftAxisIndex);
@@ -304,8 +312,8 @@ bool TimeSeries::draw() const {
 
     // draw all middles before left rights since they use axis ssbo from linked app
     for (const auto& item : m_expansions) {
-      item.middle->draw();
-      item.addVisualizer->draw();
+        // item.middle->draw();
+        item.addVisualizer->draw();
     }
 
 	return true;
@@ -361,7 +369,8 @@ void TimeSeries::initializeIndexBuffers() {
 
 void TimeSeries::initializeStorageBuffers() {
     for (int i = 0; i < m_num_timeAxis; i++) {
-        auto val = Utils::remap((float)i / (m_num_timeAxis - 1), glm::vec2{0, 1}, glm::vec2{-1, 1});
+        //auto val = Utils::remap((float)i / (m_num_timeAxis - 1), glm::vec2{0, 1}, glm::vec2{-1, 1});
+        auto val = (float)i / (m_num_timeAxis - 1);
         m_timeAxis.push_back(val);
     }
    

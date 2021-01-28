@@ -3,7 +3,7 @@
 GraphApp::GraphApp() : 
     Application{}, 
     m_num_attributes{4},
-    m_num_timeAxis{5},
+    m_num_timeAxis{4},
     m_model{glm::scale(glm::mat4{1.0f}, glm::vec3{0.8f})},
     m_data{initializeData()}, // init for tools
     m_axis{initializeAxis()},  // init for tools
@@ -66,6 +66,7 @@ GraphApp::~GraphApp() {
 
 bool GraphApp::draw() const {
     Application::draw();
+    glEnable(GL_DEPTH_TEST);
 
     mouseEventListener();
     

@@ -38,8 +38,6 @@ void ExpansionActive::draw() const {
 }
 
 ExpansionActive::~ExpansionActive() {
-    spdlog::debug("gone");
-
     if (glIsBuffer(m_vbo)) {
         glDeleteBuffers(1, &m_vbo);
     }
