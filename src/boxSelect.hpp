@@ -32,7 +32,7 @@ public:
     GLuint m_program;
     GLuint m_vao;
     GLuint m_vbo;
-    
+
     std::vector<Point> m_vertices{Point{}, Point{}, Point{}, Point{}};
     std::vector<int> m_current_selection_ids;
     glm::vec4 m_selection_color;

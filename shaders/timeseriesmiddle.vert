@@ -37,7 +37,7 @@ void main() {
 	
 	gl_Position = transform * vec4(vec2(attribute_coords[int(in_attribute)], _norm), 0.0, 1.0);
 	// gl_Position.z = _dataIndex;
-	
+
 	// pass-through color
 	vs_color = colors[int(in_id)];
 }

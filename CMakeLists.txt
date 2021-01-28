@@ -32,11 +32,14 @@ add_executable( graph
     src/boxSelect.cpp
     src/axisDrag.cpp
     src/tool.cpp
-    src/graphApp.cpp )
+    src/timeSeries.cpp
+    src/expansionMiddle.cpp
+    src/expansionActive.cpp
+    src/graphApp.cpp  )
 target_link_libraries(graph ${LIBRARIES})
 
 file(GLOB_RECURSE SHADERFILES  ${CMAKE_BINARY_DIR}/shaders/*)
-list(LENGTH SHADERFILES RES_LEN)
+list(LENGTH SHADERFILES RES_LEN) 
 
 if(RES_LEN GREATER 0)
     message("[Custom] Cleaning up old shader data")

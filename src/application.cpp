@@ -74,7 +74,7 @@ bool Application::update() {
 bool Application::draw() const {
   glViewport(0, 0, m_resolution.x, m_resolution.y);
   glClearColor(m_clear_color.r, m_clear_color.g, m_clear_color.b, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   return true;
 }
 
@@ -85,19 +85,22 @@ void Application::on_resize(int width, int height) {
 
 void Application::on_key(int key, int scancode, int action, int mods) {
 #ifndef NDEBUG
-  if (action == GLFW_PRESS) {
-    auto key_name = glfwGetKeyName(key, scancode);
-    if (key_name) {
-      spdlog::debug("Key '{}' was pressed", key_name);
-    } else {
-      spdlog::debug("Key {} was pressed", key);
+    if (action == GLFW_PRESS) {
+        auto key_name = glfwGetKeyName(key, scancode);
+        if (key_name) {
+            spdlog::debug("Key '{}' was pressed", key_name);
+        } else {
+            spdlog::debug("Key {} was pressed", key);
+        }
     }
-  }
 #endif
 
-  if ((key == GLFW_KEY_Q || key == GLFW_KEY_ESCAPE) && (action == GLFW_PRESS)) {
-    set_should_close(true);
-  }
+    if ((key == GLFW_KEY_Q || key == GLFW_KEY_ESCAPE) && (action == GLFW_PRESS)) {
+        set_should_close(true);
+    }
+    if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+    
+    }
 }
 
 void Application::on_mouse_move(double dx, double dy) {}
@@ -125,18 +128,18 @@ void Application::on_mouse_button(int button, int action, int mods) {
 void Application::on_scroll(double x, double y) {}
 
 bool Application::init_glfw() {
-  if (!glfwInit()) {
-    return false;
-  }
+    if (!glfwInit()) {
+        return false;
+    }
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifndef NDEBUG
-  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 #endif
 
-  return true;
+    return true;
 }
 
 bool Application::create_window() {
