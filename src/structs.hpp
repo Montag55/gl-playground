@@ -28,6 +28,12 @@ enum MouseState {
 struct Vertex {
     float id;               // should be uint
     float attIndx;          // should be uint
+    float axisIndx;         // should be uint
+};
+
+struct Axis {
+    int attribute;
+    float coord;
 };
 
 struct MouseStatus {

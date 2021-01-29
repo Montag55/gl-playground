@@ -7,6 +7,12 @@ bool operator==(const TimeExpansion& a, const TimeExpansion& b) {
   return false;
 }
 
+bool operator==(const Axis& a, const Axis& b) {
+  if (a.coord == b.coord && a.attribute == b.attribute)
+    return true;
+  return false;
+}
+
 TimeSeries::TimeSeries(GraphApp* app):
 	Tool(app), 
     m_num_timeAxis{*app->getNumTimeAxis()}
@@ -86,8 +92,8 @@ bool TimeSeries::checkSelection(const glm::vec2& cursor) {
     for (int i = 0; i < order.size() - 1; i++) {
 
         auto aabb = AABB{
-            glm::vec2{axis[order[i]], 1},
-            glm::vec2{axis[order[i+1]], -1}
+            glm::vec2{axis[order[i]].coord, 1},
+            glm::vec2{axis[order[i+1]].coord, -1}
         };
         
         if (Utils::insideAABB(ss_pos, aabb)) {
@@ -146,16 +152,13 @@ void TimeSeries::updateSelections() {
 
 void TimeSeries::createEntry(TimeExpansion& entry) const{       
     setEntryCoords(entry);
-    
-    // set tilt angle since no '3D'
-    // entry.angle = 10.0f;
-    
+        
     // create middle section
     entry.middle = new ExpansionMiddle(
         entry.leftAxisIndex, 
         entry.rightAxisIndex, 
-        m_linkedApp->getData()->size() / m_linkedApp->getAxis()->size() / m_num_timeAxis,
-        m_linkedApp->getAxis()->size(),
+        m_linkedApp->getData()->size() / *m_linkedApp->getNumAttributes() / m_num_timeAxis,
+        *m_linkedApp->getNumAttributes(),
         m_middle_program,
         m_linkedApp
     );
@@ -180,23 +183,23 @@ void TimeSeries::setEntryCoords(TimeExpansion& entry) const {
     auto order = *m_linkedApp->getAxisOrder();
     
     // dynamic rotation dependent on axis distance
-    entry.angle = glm::clamp(45 * glm::distance(axis[entry.leftAxisIndex], axis[entry.rightAxisIndex]) / (2 * m_mouse_model[2][2]), 0.0f, 45.0f);
+    entry.angle = glm::clamp(45 * glm::distance(axis[entry.leftAxisIndex].coord, axis[entry.rightAxisIndex].coord) / (2 * m_mouse_model[2][2]), 0.0f, 45.0f);
     
     // rotate and shift time expansion to align with left axis
     entry.model_left = m_draw_model;
-    entry.model_left = glm::translate(entry.model_left, glm::vec3(0.0f, 0.0f, m_mouse_model[2][2]));
+    entry.model_left = glm::translate(entry.model_left, glm::vec3(0.0f, 0.0f, 1));
     entry.model_left = glm::rotate(entry.model_left, glm::radians(90 - entry.angle), glm::vec3(0.0f, 1.0f, 0.0f));
-    entry.model_left = glm::translate(entry.model_left, glm::vec3(0.0f, 0.0f, axis[entry.leftAxisIndex]));
+    entry.model_left = glm::translate(entry.model_left, glm::vec3(0.0f, 0.0f, axis[entry.leftAxisIndex].coord * (m_mouse_model[1][1] + m_draw_model[1][1]) / 2));
 
     // rotate and shift time expansion to align with right axis
     entry.model_right = m_draw_model;
-    entry.model_right = glm::translate(entry.model_right, glm::vec3(0.0f, 0.0f, m_mouse_model[2][2]));
+    entry.model_right = glm::translate(entry.model_right, glm::vec3(0.0f, 0.0f, 1));
     entry.model_right = glm::rotate(entry.model_right, glm::radians(90 + entry.angle), glm::vec3(0.0f, 1.0f, 0.0f));
-    entry.model_right = glm::translate(entry.model_right, glm::vec3(0.0f, 0.0f, axis[entry.rightAxisIndex]));
+    entry.model_right = glm::translate(entry.model_right, glm::vec3(0.0f, 0.0f, axis[entry.rightAxisIndex].coord * (m_mouse_model[1][1] + m_draw_model[1][1]) / 2));
 
     // place camera between axis
-    entry.view = glm::lookAt(glm::vec3((axis[entry.leftAxisIndex] + axis[entry.rightAxisIndex]) * 0.5f, 0, 0),
-                           glm::vec3((axis[entry.leftAxisIndex] + axis[entry.rightAxisIndex]) * 0.5f, 0, -1),
+    entry.view = glm::lookAt(glm::vec3((axis[entry.leftAxisIndex].coord + axis[entry.rightAxisIndex].coord) * 0.5f, 0, 0),
+                           glm::vec3((axis[entry.leftAxisIndex].coord + axis[entry.rightAxisIndex].coord) * 0.5f, 0, -1),
                            glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
@@ -213,7 +216,7 @@ void TimeSeries::updateEntries() const {
     for (auto& entry : ptr->m_expansions) {
         
         // check if axis got flipped
-        if (axis[entry.leftAxisIndex] > axis[entry.rightAxisIndex]) {
+        if (axis[entry.leftAxisIndex].coord > axis[entry.rightAxisIndex].coord) {
             auto tmp = entry.leftAxisIndex;
             entry.leftAxisIndex = entry.rightAxisIndex;
             entry.rightAxisIndex = tmp;
@@ -223,8 +226,8 @@ void TimeSeries::updateEntries() const {
         for (const auto& idx : *order) {
             auto it = std::find(entry.middleAxisIndicies.begin(), entry.middleAxisIndicies.end(), idx);
             if (it == entry.middleAxisIndicies.end() && // check if not in middle
-                axis[idx] > axis[entry.leftAxisIndex] &&  // and inbetween axis
-                axis[idx] < axis[entry.rightAxisIndex]) {
+                axis[idx].coord > axis[entry.leftAxisIndex].coord &&  // and inbetween axis
+                axis[idx].coord < axis[entry.rightAxisIndex].coord) {
                 
                 // add to middle
                 entry.middleAxisIndicies.push_back(idx);
@@ -233,8 +236,8 @@ void TimeSeries::updateEntries() const {
                 ptr->updateParentIndicies();
             } 
             else if (it != entry.middleAxisIndicies.end() && // if already in middle
-                     (axis[idx] < axis[entry.leftAxisIndex] ||  // and nolong inbetween axis
-                      axis[idx] > axis[entry.rightAxisIndex])) {
+                     (axis[idx].coord < axis[entry.leftAxisIndex].coord ||  // and nolong inbetween axis
+                      axis[idx].coord > axis[entry.rightAxisIndex].coord)) {
                 
                 // remove from middle
                 entry.middleAxisIndicies.erase(it);
@@ -312,7 +315,7 @@ bool TimeSeries::draw() const {
 
     // draw all middles before left rights since they use axis ssbo from linked app
     for (const auto& item : m_expansions) {
-        // item.middle->draw();
+        item.middle->draw();
         item.addVisualizer->draw();
     }
 

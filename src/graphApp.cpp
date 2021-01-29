@@ -28,6 +28,8 @@ GraphApp::GraphApp() :
     initializeVertexBuffers();
     initializeStorageBuffers();
     
+    addAxis(0);
+
     // activate color blending and setup background color
     m_clear_color = glm::vec3(0.125, 0.133, 0.156);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -130,7 +132,7 @@ void GraphApp::initializeColor() {
         throw std::runtime_error("Failed to initialze Color data!");
     }
     m_colors.clear();
-    for (int i = 0; i < (m_data.size() / m_num_timeAxis) / m_axis.size(); i++) {
+    for (int i = 0; i < (m_data.size() / m_num_timeAxis) / m_num_attributes; i++) {
         if(i < 50)
             m_colors.push_back(glm::vec4(0.321, 0.580, 0.886, 0.4f));
         else if(i >= 50 && i < 100)
@@ -140,10 +142,13 @@ void GraphApp::initializeColor() {
     }
 }
 
-std::vector<float> GraphApp::initializeAxis() {
-    std::vector<float> tmp(m_num_attributes, 0);
+std::vector<Axis> GraphApp::initializeAxis() {
+    std::vector<Axis> tmp;
     for (int i = 0; i < m_num_attributes; i++) {
-        tmp[i] = Utils::remap((float)i / (m_num_attributes - 1), glm::vec2{0,1}, glm::vec2{-1,1});
+        tmp.push_back( Axis {
+            i,
+            Utils::remap((float)i / (m_num_attributes - 1), glm::vec2{0,1}, glm::vec2{-1,1})
+        });
     }
     return tmp;
 }
@@ -171,15 +176,26 @@ void GraphApp::initializeVertexBuffers() {
     glVertexArrayAttribFormat(m_vao, att_attrib_idx, 1, GL_FLOAT, false, offsetof(Vertex, attIndx));
     glVertexArrayAttribBinding(m_vao, att_attrib_idx, 0);
 
+    // setup axis index id attribute
+    GLuint axis_attrib_idx = 2;
+    glEnableVertexArrayAttrib(m_vao, axis_attrib_idx);
+    glVertexArrayAttribFormat(m_vao, axis_attrib_idx, 1, GL_FLOAT, false, offsetof(Vertex, axisIndx));
+    glVertexArrayAttribBinding(m_vao, axis_attrib_idx, 0);
+    
+    // create buffer so every axis can be represented m_num_timeAxis of times
+    glNamedBufferData(m_vbo, sizeof(Vertex) * m_data.size(), NULL, GL_DYNAMIC_DRAW);
+    
     // setup vertices
     for (int i = 0; i < m_data.size() / m_num_timeAxis; i++) {
         m_vertices.push_back( Vertex{
             float(i / m_axis.size()),
+            float(m_axis[i % m_axis.size()].attribute), 
             float(i % m_axis.size())
         });
     }
-
-    glNamedBufferData(m_vbo, Utils::vectorsizeof(m_vertices), m_vertices.data(), GL_DYNAMIC_DRAW);
+    
+    // init buffer parialy
+    glNamedBufferSubData(m_vbo, 0, Utils::vectorsizeof(m_vertices), m_vertices.data());
 }
     
 void GraphApp::initializeStorageBuffers() {         
@@ -205,7 +221,8 @@ void GraphApp::initializeStorageBuffers() {
     GLuint attribute_pos_binding = 3;
 	glCreateBuffers(1, &m_attribute_ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, attribute_pos_binding, m_attribute_ssbo);
-	glNamedBufferData(m_attribute_ssbo, Utils::vectorsizeof(m_axis), m_axis.data(), GL_DYNAMIC_DRAW);
+	glNamedBufferData(m_attribute_ssbo, sizeof(float) * m_num_attributes * m_num_timeAxis, NULL, GL_DYNAMIC_DRAW);
+    updateAxisSSBO();
 }
     
 void GraphApp::initializeIndexBuffer() {
@@ -214,6 +231,12 @@ void GraphApp::initializeIndexBuffer() {
         throw std::runtime_error("Failed to initialze Color data!");
     }
         
+
+    // Bind to Element array buffer -> Indexing so DrawElements can be used
+    glGenBuffers(1, &m_ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * m_data.size() * 2, NULL, GL_DYNAMIC_DRAW);
+    
     // tes-schader can't do linestrips -> push all vertex indicies 
     // in twice except for first and last of each line 
     for (unsigned short i = 0; i < m_data.size() / m_num_timeAxis; i++) {
@@ -223,10 +246,7 @@ void GraphApp::initializeIndexBuffer() {
         }
     }
 
-    // Bind to Element array buffer -> Indexing so DrawElements can be used
-    glGenBuffers(1, &m_ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, Utils::vectorsizeof(m_indicies), m_indicies.data(), GL_DYNAMIC_DRAW);
+    glNamedBufferSubData(m_ibo, 0, Utils::vectorsizeof(m_indicies), m_indicies.data());
 }
 
 void GraphApp::drawPolyLines() const {
@@ -234,7 +254,7 @@ void GraphApp::drawPolyLines() const {
         
     gl::set_program_uniform(m_polyline_program, glGetUniformLocation(m_polyline_program, "transform"), m_model);
     gl::set_program_uniform(m_polyline_program, glGetUniformLocation(m_polyline_program, "to_range"), glm::vec2(-1, 1));
-    glProgramUniform1i(m_polyline_program, glGetUniformLocation(m_polyline_program, "num_attributes"), m_axis.size());
+    glProgramUniform1i(m_polyline_program, glGetUniformLocation(m_polyline_program, "num_attributes"), m_num_attributes);
         
     // bind buffers eventhough they were never unbinded, just to be sure
     glBindVertexArray(m_vao);
@@ -303,7 +323,7 @@ void GraphApp::mouseEventListener() const {
         case Click: 
             // set boxselection tool starting location
             if(!m_axisDrag_tool->updateSelection(m_prevMouseState.pos, current.pos))
-                m_boxSelect_tool->setSelectionOrigin_callback(current.pos);
+               m_boxSelect_tool->setSelectionOrigin_callback(current.pos);
             break;
         case Drag:
             // upate boxselection tool here
@@ -316,7 +336,6 @@ void GraphApp::mouseEventListener() const {
                 m_boxSelect_tool->stopSelection_callback();
             else
                 m_timeSeries_tool->updateSelections();
-                  
             break;
         case Double_Click:
             // update time-series-expansion tool here
@@ -330,10 +349,15 @@ void GraphApp::mouseEventListener() const {
     ptr->m_prevMouseState = current;
 }
 
-void GraphApp::updateAxis(const std::vector<float>& axis) const {
+void GraphApp::updateAxis(const std::vector<Axis>& axis) const {
     GraphApp* ptr = const_cast<GraphApp*>(this);
     ptr->m_axis = axis;
-    glNamedBufferSubData(m_attribute_ssbo, 0, Utils::vectorsizeof(m_axis), m_axis.data());
+
+    std::vector<float> tmp;
+    for (const auto& i : m_axis) {
+      tmp.push_back(i.coord);
+    }
+    glNamedBufferSubData(ptr->m_attribute_ssbo, 0, Utils::vectorsizeof(tmp), tmp.data());
 }
 
 void GraphApp::updateColor(const std::vector<int>& ids, bool reset) const {
@@ -347,6 +371,22 @@ void GraphApp::updateColor(const std::vector<int>& ids, bool reset) const {
         tmp_colors[i] = glm::vec4(1,0,0,1);
     }
     glNamedBufferSubData(m_color_ssbo, 0, Utils::vectorsizeof(tmp_colors), tmp_colors.data());
+}
+
+void GraphApp::updateVertecies() const {
+    GraphApp* ptr = const_cast<GraphApp*>(this);    
+    ptr->m_vertices.clear();
+    
+    auto line_count = m_data.size() / m_num_timeAxis / m_num_attributes;
+    for (int i = 0; i < line_count * m_axis.size(); i++) {
+        ptr->m_vertices.push_back(  Vertex{
+            float(i / m_axis.size()), 
+            float(m_axis[i % m_axis.size()].attribute), 
+            float(i % m_axis.size())
+        });
+    }
+
+    glNamedBufferSubData(m_vbo, 0, Utils::vectorsizeof(m_vertices), m_vertices.data());
 }
 
 void GraphApp::updateVertexIndicies() const {
@@ -370,7 +410,8 @@ void GraphApp::updateVertexIndicies() const {
     }
 
     // create new index ordering
-    for (int i = 0; i < m_data.size() / m_num_timeAxis; i += m_axis.size()) {
+    auto line_count = m_data.size() / m_num_timeAxis / m_num_attributes;
+    for (int i = 0; i < line_count * m_axis.size(); i += m_axis.size()) {
         for(int j = 0; j < m_axis.size(); j++){
             // if axis is excluded twice, skip it
             if (occurences[m_axisOrder[j]] > 1)
@@ -403,6 +444,7 @@ void GraphApp::updateOrder(const std::vector<int>& order) const {
     GraphApp* ptr = const_cast<GraphApp*>(this);
     if (m_axisOrder != order) {
         ptr->m_axisOrder = order;
+        updateVertecies();
         updateVertexIndicies();
     }
 }
@@ -415,11 +457,36 @@ void GraphApp::updateExcludedAxis(const std::vector<int>& axis) const {
     }
 }
 
+void GraphApp::addAxis(const int& attribute) const {
+    GraphApp* ptr = const_cast<GraphApp*>(this);
+    
+    // rescale all existing axis to make room for new one
+    for (int i = 0; i < m_axis.size(); i++) {
+        ptr->m_axis[i].coord = Utils::remap(m_axis[i].coord, glm::vec2(-1, 1), glm::vec2(-1, 1 - (1.0f / m_axis.size())));
+    }
+    
+    // add the new axis
+    ptr->m_axis.push_back(Axis{attribute, 1.0f});
+    // update axis ssbo accordingly
+    ptr->updateAxisSSBO();
+    
+    // update axis draw tool
+    m_axisDrag_tool->addAxis();
+}
+
+void GraphApp::updateAxisSSBO() {
+    std::vector<float> axis;
+    for (const auto& i : m_axis) {
+        axis.push_back(i.coord);
+    }
+    glNamedBufferSubData(m_attribute_ssbo, 0, Utils::vectorsizeof(axis), axis.data());
+}
+
 const std::vector<Vertex>* GraphApp::getVertecies(){
     return &m_vertices;
 }
 
-const std::vector<float>* GraphApp::getAxis() {
+const std::vector<Axis>* GraphApp::getAxis() {
     return &m_axis;
 }
 
@@ -449,6 +516,10 @@ const std::vector<int>* GraphApp::getAxisOrder() {
 
 const int* GraphApp::getNumTimeAxis() {
     return &m_num_timeAxis;
+}
+
+const int* GraphApp::getNumAttributes() {
+    return &m_num_attributes;
 }
 
 const GraphApp* GraphApp::getPtr() {

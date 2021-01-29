@@ -113,12 +113,12 @@ namespace Utils{
 		return a.val < b.val; 
 	} 
 
-	inline bool sortWithIndecies(const std::vector<float>& val, std::vector<int>& order) {
+	inline bool sortWithIndecies(const std::vector<Axis>& val, std::vector<int>& order) {
 		// create obj for linked sorting
 		std::vector<SortObj> tmp;
 		for (int i = 0; i < val.size(); i++) { 
 			tmp.push_back(SortObj{
-				val[i], 
+				val[i].coord, 
 				i
 			}); 
 		}
@@ -128,14 +128,15 @@ namespace Utils{
 		
 		// write linked sorting results to input buffers
 		auto prv_val = val;
+		bool changed = false;
 		for (int i = 0; i < tmp.size(); i++) {
-			prv_val[i] = tmp[i].index;
+			if (prv_val[i].coord != tmp[i].index)
+				changed = true;
+			
+			prv_val[i].coord = tmp[i].index;
 			order[i] = tmp[i].index;
 		}
 		
-		if(val != prv_val)
-			return true;
-		
-		return false;
+		return changed;
 	}
 }

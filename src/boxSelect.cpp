@@ -147,11 +147,11 @@ std::vector<int> BoxSelect::checkIntersection() const{
         Vertex v1 = (*m_linkedApp->getVertecies())[(*m_linkedApp->getIndicies())[i]];
         Vertex v2 = (*m_linkedApp->getVertecies())[(*m_linkedApp->getIndicies())[i + 1]];
         
-        auto x1 = (*m_linkedApp->getAxis())[v1.attIndx];
-        auto y1 = Utils::remap((*m_linkedApp->getData())[ m_linkedApp->getAxis()->size() * (int)v1.id + (int)v1.attIndx], (*m_linkedApp->getRanges())[(int)v1.attIndx], glm::vec2(-1,1));
+        auto x1 = (*m_linkedApp->getAxis())[v1.axisIndx].coord;
+        auto y1 = Utils::remap((*m_linkedApp->getData())[ *m_linkedApp->getNumAttributes() * (int)v1.id + (int)v1.attIndx], (*m_linkedApp->getRanges())[(int)v1.attIndx], glm::vec2(-1,1));
         
-        auto x2 = (*m_linkedApp->getAxis())[v2.attIndx];
-        auto y2 = Utils::remap((*m_linkedApp->getData())[ m_linkedApp->getAxis()->size() * (int)v2.id + (int)v2.attIndx], (*m_linkedApp->getRanges())[(int)v2.attIndx], glm::vec2(-1,1));
+        auto x2 = (*m_linkedApp->getAxis())[v2.axisIndx].coord;
+        auto y2 = Utils::remap((*m_linkedApp->getData())[ *m_linkedApp->getNumAttributes() * (int)v2.id + (int)v2.attIndx], (*m_linkedApp->getRanges())[(int)v2.attIndx], glm::vec2(-1,1));
 
         auto lineAABB = AABB {
             glm::vec2(glm::min(x1, x2), glm::max(y1, y2)),

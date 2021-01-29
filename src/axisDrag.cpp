@@ -118,7 +118,7 @@ bool AxisDrag::updateSelection(const glm::vec2& prev, const glm::vec2& current) 
     for (int i = 0; i < m_axis_status.size(); i++) {
         // move all selected axis by (mouse) delta
         if (m_axis_status[i]) {
-            axis[i] += (m_mouse_model * glm::vec4(x, 0, 0, 1)).x;
+            axis[i].coord += (m_mouse_model * glm::vec4(x, 0, 0, 1)).x;
             moveing = true;
         }
     }
@@ -136,16 +136,36 @@ bool AxisDrag::updateSelection(const glm::vec2& prev, const glm::vec2& current) 
     return moveing;
 }
 
-void AxisDrag::updateAxis(const std::vector<float>& axis) {
+void AxisDrag::addAxis() const {
+    AxisDrag* ptr = const_cast<AxisDrag*>(this);
+    ptr->m_order.push_back(m_order.size());
+    ptr->m_axis_status.push_back(false);
+
+    ptr->updateAxis(*m_linkedApp->getAxis());
+    m_linkedApp->updateOrder(m_order);
+}
+
+void AxisDrag::updateAxis(const std::vector<Axis>& axis) {
+    // update vertecies
     m_vertices.clear();
     for (const auto& i : axis) {
-        m_vertices.push_back(AxisVertex{glm::vec2(i - m_thickness / 2,  1.05), 0});
-        m_vertices.push_back(AxisVertex{glm::vec2(i + m_thickness / 2,  1.05), 0});
-        m_vertices.push_back(AxisVertex{glm::vec2(i - m_thickness / 2, -1.05), 0});
-        m_vertices.push_back(AxisVertex{glm::vec2(i + m_thickness / 2, -1.05), 0});
+        m_vertices.push_back(AxisVertex{glm::vec2(i.coord - m_thickness / 2,  1.05), 0});
+        m_vertices.push_back(AxisVertex{glm::vec2(i.coord + m_thickness / 2,  1.05), 0});
+        m_vertices.push_back(AxisVertex{glm::vec2(i.coord - m_thickness / 2, -1.05), 0});
+        m_vertices.push_back(AxisVertex{glm::vec2(i.coord + m_thickness / 2, -1.05), 0});
     }
-
     glNamedBufferSubData(m_vbo, 0, Utils::vectorsizeof(m_vertices), m_vertices.data());
+
+    // update indicies
+    m_indicies.clear();
+    for (unsigned short i = 0; i < m_vertices.size(); i++) {
+        m_indicies.push_back(i);
+        
+        // create degenerate triangles between quads
+        if ((i % 4 == 3 || i % 4 == 0) && i != 0 && i != m_vertices.size() - 1)
+            m_indicies.push_back(i);
+    }
+    glNamedBufferSubData(m_ibo, 0, Utils::vectorsizeof(m_indicies), m_indicies.data());
 }
 
 void AxisDrag::initializeVertexBuffers() {
@@ -164,6 +184,8 @@ void AxisDrag::initializeVertexBuffers() {
     glVertexArrayAttribFormat(m_vao, color_attrib_idx, 1, GL_FLOAT, false, offsetof(AxisVertex, colorIndx));
     glVertexArrayAttribBinding(m_vao, color_attrib_idx, 0);
 
+    glNamedBufferData(m_vbo, sizeof(AxisVertex) * 4 * *m_linkedApp->getNumTimeAxis() * m_linkedApp->getAxis()->size(), NULL, GL_DYNAMIC_DRAW);
+    
     /** init indecies for MultiDrawArrays call
      * 0 +----+ 1
      *   |    |
@@ -171,16 +193,17 @@ void AxisDrag::initializeVertexBuffers() {
      * 2 +----+ 3
     **/
     for (const auto& i : *m_linkedApp->getAxis()) {
-        m_vertices.push_back(AxisVertex{glm::vec2(i - m_thickness / 2,  1.05), 0});
-        m_vertices.push_back(AxisVertex{glm::vec2(i + m_thickness / 2,  1.05), 0});
-        m_vertices.push_back(AxisVertex{glm::vec2(i - m_thickness / 2, -1.05), 0});
-        m_vertices.push_back(AxisVertex{glm::vec2(i + m_thickness / 2, -1.05), 0});
+        m_vertices.push_back(AxisVertex{glm::vec2(i.coord - m_thickness / 2,  1.05), 0});
+        m_vertices.push_back(AxisVertex{glm::vec2(i.coord + m_thickness / 2,  1.05), 0});
+        m_vertices.push_back(AxisVertex{glm::vec2(i.coord - m_thickness / 2, -1.05), 0});
+        m_vertices.push_back(AxisVertex{glm::vec2(i.coord + m_thickness / 2, -1.05), 0});
     }  
 
-    glNamedBufferData(m_vbo, Utils::vectorsizeof(m_vertices), m_vertices.data(), GL_DYNAMIC_DRAW);
+    glNamedBufferSubData(m_vbo, 0, Utils::vectorsizeof(m_vertices), m_vertices.data());
 }
 
 void AxisDrag::initializeIndexBuffer() {
+    
     for (unsigned short i = 0; i < m_vertices.size(); i++) {
         m_indicies.push_back(i);
         
@@ -188,9 +211,11 @@ void AxisDrag::initializeIndexBuffer() {
         if ((i % 4 == 3 || i % 4 == 0) && i != 0 && i != m_vertices.size() - 1)
             m_indicies.push_back(i);
     }
-    
+
     // Bind to Element array buffer -> Indexing so DrawElements can be used
     glGenBuffers(1, &m_ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, Utils::vectorsizeof(m_indicies), m_indicies.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * 8 * *m_linkedApp->getNumTimeAxis(), NULL, GL_DYNAMIC_DRAW);
+    
+    glNamedBufferSubData(m_ibo, 0, Utils::vectorsizeof(m_indicies), m_indicies.data());
 }

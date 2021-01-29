@@ -25,11 +25,16 @@ class GraphApp :
     ~GraphApp();
 	bool draw() const override;
     void updateColor(const std::vector<int>& ids, bool reset = false) const;
-    void updateAxis(const std::vector<float>& axis) const;
+    void updateAxis(const std::vector<Axis>& axis) const;
     void updateVertexIndicies() const;
+    void updateOrder(const std::vector<int>& order) const;
+    void updateExcludedAxis(const std::vector<int>& axis) const;
+    void updateVertecies() const;
+    void updateAxisSSBO();
+    void addAxis(const int& attribute) const;
     const std::vector<Vertex>* getVertecies();
     const std::vector<unsigned short>* getIndicies();
-    const std::vector<float>* getAxis();
+    const std::vector<Axis>* getAxis();
     const std::vector<float>* getData();
     const std::vector<glm::vec4>* getColor();
     const glm::mat4& getModel();
@@ -39,12 +44,11 @@ class GraphApp :
     const GLuint* getVAO();
     const GLuint* getAttribute_SSBO();
     const int* getNumTimeAxis();
-    void updateOrder(const std::vector<int>& order) const;
-    void updateExcludedAxis(const std::vector<int>& axis) const;
+    const int* getNumAttributes();
 
 private: 
 	std::vector<float> initializeData();
-    std::vector<float> initializeAxis();
+    std::vector<Axis> initializeAxis();
     std::vector<glm::vec2> initializeRanges();
 	void initializeColor();
 	void initializeVertexBuffers();
@@ -68,7 +72,7 @@ protected:
     
     int m_num_attributes;
     int m_num_timeAxis;
-    std::vector<float> m_axis;
+    std::vector<Axis> m_axis;
     std::vector<float> m_data;
     std::vector<Vertex> m_vertices;
     std::vector<glm::vec2> m_ranges;

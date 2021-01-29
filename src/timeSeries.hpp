@@ -48,7 +48,7 @@ private:
     std::vector<Vertex> m_vertices;
     std::vector<unsigned short> m_indicies;
     std::vector<TimeExpansion> m_expansions;
-    std::vector<float> m_prevAxis;
+    std::vector<Axis> m_prevAxis;
     std::vector<float> m_timeAxis;
     std::vector<int> m_excludedAxis; // left & right
     std::vector<int> m_middleAxis;  // middle

@@ -12,10 +12,11 @@ public:
 	bool draw() const override;
 	bool registerTool() override;
 	bool checkSelection();
+    void addAxis() const;
 	bool updateSelection(const glm::vec2& prev, const glm::vec2& current);
 	
 private:
-	void updateAxis(const std::vector<float>& axis);
+	void updateAxis(const std::vector<Axis>& axis);
 	void updateColors();
 	void initializeVertexBuffers();
 	void initializeIndexBuffer();
