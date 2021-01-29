@@ -6,6 +6,7 @@ uniform vec2 to_range;
 
 layout(location = 0) in float in_id;
 layout(location = 1) in float in_attribute;
+layout(location = 2) in float in_axis;
 
 layout(location = 0) out vec4 vs_color;
 
@@ -35,7 +36,7 @@ void main() {
 	float _value = values[_dataIndex];
 	float _norm = remap(_value, ranges[int(in_attribute)], to_range);
 	
-	gl_Position = transform * vec4(vec2(attribute_coords[int(in_attribute)], _norm), 0.0, 1.0);
+	gl_Position = transform * vec4(vec2(attribute_coords[int(in_axis)], _norm), 0.0, 1.0);
 	// gl_Position.z = _dataIndex;
 	
 	// pass-through color
