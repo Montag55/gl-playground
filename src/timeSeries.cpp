@@ -1,16 +1,15 @@
 #include <timeSeries.hpp>
 
-
 bool operator==(const TimeExpansion& a, const TimeExpansion& b) {
-  if (a.leftAxisIndex == b.leftAxisIndex && a.rightAxisIndex == b.rightAxisIndex)
-      return true;
-  return false;
+    if (a.leftAxisIndex == b.leftAxisIndex && a.rightAxisIndex == b.rightAxisIndex)
+        return true;
+    return false;
 }
 
 bool operator==(const Axis& a, const Axis& b) {
-  if (a.coord == b.coord && a.attribute == b.attribute)
-    return true;
-  return false;
+    if (a.coord == b.coord && a.attribute == b.attribute)
+        return true;
+    return false;
 }
 
 TimeSeries::TimeSeries(GraphApp* app):

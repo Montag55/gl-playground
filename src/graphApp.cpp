@@ -9,7 +9,7 @@ GraphApp::GraphApp() :
     m_axis{initializeAxis()},  // init for tools
     m_ranges{initializeRanges()},  // init for tools
     m_boxSelect_tool{new BoxSelect(this)},  // enable boxSelection tool
-    m_axisDrag_tool{new AxisDrag(this)},    // enable axisDrag tool
+    m_axisDrag_tool{new AxisDrag(this)},   // enable axisDrag tool
     m_timeSeries_tool{new TimeSeries(this)} // enable timeSeries tool
 {     
     // setup shader program
@@ -27,8 +27,6 @@ GraphApp::GraphApp() :
     // init gpu buffers
     initializeVertexBuffers();
     initializeStorageBuffers();
-    
-    addAxis(0);
 
     // activate color blending and setup background color
     m_clear_color = glm::vec3(0.125, 0.133, 0.156);
@@ -76,7 +74,7 @@ bool GraphApp::draw() const {
     m_axisDrag_tool->draw();
     
     // both share same ssbos
-    m_timeSeries_tool->draw();
+    // m_timeSeries_tool->draw();
     drawPolyLines();
         
     m_boxSelect_tool->draw();
@@ -182,9 +180,6 @@ void GraphApp::initializeVertexBuffers() {
     glVertexArrayAttribFormat(m_vao, axis_attrib_idx, 1, GL_FLOAT, false, offsetof(Vertex, axisIndx));
     glVertexArrayAttribBinding(m_vao, axis_attrib_idx, 0);
     
-    // create buffer so every axis can be represented m_num_timeAxis of times
-    glNamedBufferData(m_vbo, sizeof(Vertex) * m_data.size(), NULL, GL_DYNAMIC_DRAW);
-    
     // setup vertices
     for (int i = 0; i < m_data.size() / m_num_timeAxis; i++) {
         m_vertices.push_back( Vertex{
@@ -194,8 +189,8 @@ void GraphApp::initializeVertexBuffers() {
         });
     }
     
-    // init buffer parialy
-    glNamedBufferSubData(m_vbo, 0, Utils::vectorsizeof(m_vertices), m_vertices.data());
+    // create buffer
+    glNamedBufferData(m_vbo, Utils::vectorsizeof(m_vertices), m_vertices.data(), GL_DYNAMIC_DRAW);
 }
     
 void GraphApp::initializeStorageBuffers() {         
@@ -221,7 +216,6 @@ void GraphApp::initializeStorageBuffers() {
     GLuint attribute_pos_binding = 3;
 	glCreateBuffers(1, &m_attribute_ssbo);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, attribute_pos_binding, m_attribute_ssbo);
-	glNamedBufferData(m_attribute_ssbo, sizeof(float) * m_num_attributes * m_num_timeAxis, NULL, GL_DYNAMIC_DRAW);
     updateAxisSSBO();
 }
     
@@ -231,12 +225,6 @@ void GraphApp::initializeIndexBuffer() {
         throw std::runtime_error("Failed to initialze Color data!");
     }
         
-
-    // Bind to Element array buffer -> Indexing so DrawElements can be used
-    glGenBuffers(1, &m_ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * m_data.size() * 2, NULL, GL_DYNAMIC_DRAW);
-    
     // tes-schader can't do linestrips -> push all vertex indicies 
     // in twice except for first and last of each line 
     for (unsigned short i = 0; i < m_data.size() / m_num_timeAxis; i++) {
@@ -246,7 +234,10 @@ void GraphApp::initializeIndexBuffer() {
         }
     }
 
-    glNamedBufferSubData(m_ibo, 0, Utils::vectorsizeof(m_indicies), m_indicies.data());
+    // Bind to Element array buffer -> Indexing so DrawElements can be used
+    glGenBuffers(1, &m_ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, Utils::vectorsizeof(m_indicies), m_indicies.data(), GL_DYNAMIC_DRAW);
 }
 
 void GraphApp::drawPolyLines() const {
@@ -323,12 +314,12 @@ void GraphApp::mouseEventListener() const {
         case Click: 
             // set boxselection tool starting location
             if(!m_axisDrag_tool->updateSelection(m_prevMouseState.pos, current.pos))
-               m_boxSelect_tool->setSelectionOrigin_callback(current.pos);
+                m_boxSelect_tool->setSelectionOrigin_callback(current.pos);
             break;
         case Drag:
             // upate boxselection tool here
             if(!m_axisDrag_tool->updateSelection(m_prevMouseState.pos, current.pos))
-                m_boxSelect_tool->updateSelection_callback(current.pos); 
+                m_boxSelect_tool->updateSelection_callback(current.pos);
             break;
         case Release:
             // clear boxselection tool here and update all time expansions
@@ -344,6 +335,14 @@ void GraphApp::mouseEventListener() const {
         default:
             // check if mouse over axis
             m_axisDrag_tool->checkSelection();
+            if (current.buttons[Middle]) {
+                auto tmp = m_axisDrag_tool->getAxisStatus();
+
+                for (int i = 0; i < tmp->size(); i++) {
+                    if ((*tmp)[i])
+                        addAxis(m_axis[i].attribute);
+                }
+            }
             break;
     }
     ptr->m_prevMouseState = current;
@@ -385,8 +384,9 @@ void GraphApp::updateVertecies() const {
             float(i % m_axis.size())
         });
     }
-
-    glNamedBufferSubData(m_vbo, 0, Utils::vectorsizeof(m_vertices), m_vertices.data());
+    
+    glBindVertexArray(m_vao);
+    glNamedBufferData(m_vbo, Utils::vectorsizeof(m_vertices), m_vertices.data(), GL_DYNAMIC_DRAW);
 }
 
 void GraphApp::updateVertexIndicies() const {
@@ -436,8 +436,9 @@ void GraphApp::updateVertexIndicies() const {
         ptr->m_indicies.push_back(0);
         ptr->m_indicies.push_back(0);
     }
-   
-    glNamedBufferSubData(m_ibo, 0, Utils::vectorsizeof(m_indicies), m_indicies.data());
+    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glNamedBufferData(m_ibo, Utils::vectorsizeof(m_indicies), m_indicies.data(), GL_DYNAMIC_DRAW);
 }
 
 void GraphApp::updateOrder(const std::vector<int>& order) const {
@@ -479,7 +480,8 @@ void GraphApp::updateAxisSSBO() {
     for (const auto& i : m_axis) {
         axis.push_back(i.coord);
     }
-    glNamedBufferSubData(m_attribute_ssbo, 0, Utils::vectorsizeof(axis), axis.data());
+    
+    glNamedBufferData(m_attribute_ssbo, Utils::vectorsizeof(axis), axis.data(), GL_DYNAMIC_DRAW);
 }
 
 const std::vector<Vertex>* GraphApp::getVertecies(){

@@ -154,7 +154,8 @@ void AxisDrag::updateAxis(const std::vector<Axis>& axis) {
         m_vertices.push_back(AxisVertex{glm::vec2(i.coord - m_thickness / 2, -1.05), 0});
         m_vertices.push_back(AxisVertex{glm::vec2(i.coord + m_thickness / 2, -1.05), 0});
     }
-    glNamedBufferSubData(m_vbo, 0, Utils::vectorsizeof(m_vertices), m_vertices.data());
+    glBindVertexArray(m_vao);
+    glNamedBufferData(m_vbo, Utils::vectorsizeof(m_vertices), m_vertices.data(), GL_DYNAMIC_DRAW);
 
     // update indicies
     m_indicies.clear();
@@ -165,7 +166,8 @@ void AxisDrag::updateAxis(const std::vector<Axis>& axis) {
         if ((i % 4 == 3 || i % 4 == 0) && i != 0 && i != m_vertices.size() - 1)
             m_indicies.push_back(i);
     }
-    glNamedBufferSubData(m_ibo, 0, Utils::vectorsizeof(m_indicies), m_indicies.data());
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, Utils::vectorsizeof(m_indicies), m_indicies.data(), GL_DYNAMIC_DRAW);
 }
 
 void AxisDrag::initializeVertexBuffers() {
@@ -184,7 +186,6 @@ void AxisDrag::initializeVertexBuffers() {
     glVertexArrayAttribFormat(m_vao, color_attrib_idx, 1, GL_FLOAT, false, offsetof(AxisVertex, colorIndx));
     glVertexArrayAttribBinding(m_vao, color_attrib_idx, 0);
 
-    glNamedBufferData(m_vbo, sizeof(AxisVertex) * 4 * *m_linkedApp->getNumTimeAxis() * m_linkedApp->getAxis()->size(), NULL, GL_DYNAMIC_DRAW);
     
     /** init indecies for MultiDrawArrays call
      * 0 +----+ 1
@@ -199,7 +200,7 @@ void AxisDrag::initializeVertexBuffers() {
         m_vertices.push_back(AxisVertex{glm::vec2(i.coord + m_thickness / 2, -1.05), 0});
     }  
 
-    glNamedBufferSubData(m_vbo, 0, Utils::vectorsizeof(m_vertices), m_vertices.data());
+    glNamedBufferData(m_vbo, Utils::vectorsizeof(m_vertices), m_vertices.data(), GL_DYNAMIC_DRAW);
 }
 
 void AxisDrag::initializeIndexBuffer() {
@@ -215,7 +216,9 @@ void AxisDrag::initializeIndexBuffer() {
     // Bind to Element array buffer -> Indexing so DrawElements can be used
     glGenBuffers(1, &m_ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * 8 * *m_linkedApp->getNumTimeAxis(), NULL, GL_DYNAMIC_DRAW);
-    
-    glNamedBufferSubData(m_ibo, 0, Utils::vectorsizeof(m_indicies), m_indicies.data());
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, Utils::vectorsizeof(m_indicies), m_indicies.data(), GL_DYNAMIC_DRAW);
+}
+
+std::vector<bool>* AxisDrag::getAxisStatus() {
+    return &m_axis_status;
 }

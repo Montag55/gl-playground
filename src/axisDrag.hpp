@@ -14,6 +14,7 @@ public:
 	bool checkSelection();
     void addAxis() const;
 	bool updateSelection(const glm::vec2& prev, const glm::vec2& current);
+    std::vector<bool>* getAxisStatus();
 	
 private:
 	void updateAxis(const std::vector<Axis>& axis);
