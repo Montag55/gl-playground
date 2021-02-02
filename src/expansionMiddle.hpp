@@ -14,7 +14,7 @@ class GraphApp;
 class ExpansionMiddle {
 public:
 	ExpansionMiddle();
-	ExpansionMiddle(const int& leftAxisIndex, const int& rightAxisIndex, const int& lineCount, const int& attributeCount, const GLuint& program, std::shared_ptr<GraphApp> app);
+	ExpansionMiddle(const int& leftAxisIndex, const int& rightAxisIndex, const int& lineCount, const int& attributeCount, const GLuint& program, GraphApp* app);
 	~ExpansionMiddle();
 	void update(const bool& init = false) const;
 	void draw() const;
@@ -35,5 +35,5 @@ private:
 	int m_lineCount;
 	int m_attributeCount;
 
-	std::shared_ptr<GraphApp> m_linkedApp;
+	GraphApp* m_linkedApp;
 };

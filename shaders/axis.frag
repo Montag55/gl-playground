@@ -1,9 +1,9 @@
 #version 450 core
 
-in vec4 vs_color;
+layout(location = 0) in vec4 pass_color;
 
 out vec4 out_color;
 
 void main() {
-    out_color = vs_color;
+    out_color = pass_color;
 }

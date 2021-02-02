@@ -1,5 +1,5 @@
 #pragma once
-#include < memory>
+#include <memory>
 
 // assure compile class will be there
 class GraphApp;
@@ -12,6 +12,6 @@ public:
 	void setPriority(int prio);
 
 protected:
-    std::shared_ptr<GraphApp> m_linkedApp;
+    GraphApp* m_linkedApp;
 	int m_priotity;
 };

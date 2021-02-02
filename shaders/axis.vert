@@ -1,4 +1,6 @@
 #version 450 core
+#extension GL_ARB_explicit_attrib_location : require
+
 uniform mat4 transform;
 uniform vec4 default_color;
 uniform vec4 active_color;
@@ -6,7 +8,7 @@ uniform vec4 active_color;
 layout(location = 0) in vec2 in_pos;
 layout(location = 1) in float in_color_idx;
 
-layout(location = 0) out vec4 vs_color;
+layout(location = 0) out vec4 pass_color;
 
 float fadeEaseInOut(){
 	return 0.0f;
@@ -17,9 +19,9 @@ void main() {
 	
 	// pass-through color
 	if(in_color_idx == 0){
-		vs_color = default_color;
+		pass_color = default_color;
 	}
 	else{
-		vs_color = active_color;
+		pass_color = active_color;
 	}
 }
