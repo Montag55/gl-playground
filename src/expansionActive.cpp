@@ -5,7 +5,7 @@
 
 ExpansionActive::ExpansionActive() {}
 
-ExpansionActive::ExpansionActive(const int& leftIdx, const int& rightIdx, const GLuint& program, std::shared_ptr<GraphApp> app) : 
+ExpansionActive::ExpansionActive(const int& leftIdx, const int& rightIdx, const GLuint& program, GraphApp* app) : 
 	m_linkedApp{app},
     m_program{program},
     m_leftAxisIndex{leftIdx},

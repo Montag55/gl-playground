@@ -85,7 +85,8 @@ bool GraphApp::draw() const {
 std::vector<float> GraphApp::initializeData() {
     std::vector<float> tmp;
     
-    Utils::readData(tmp, "../../iris.txt", false, true);
+    // Utils::readData(tmp, "../../iris.txt", false, true);
+    Utils::readData(tmp, "../iris.txt", false, true);
     // Utils::readData(tmp, "../../sea-ice-extent-annually.csv", true, false);
     // Utils::readData(tmp, "../../sea-ice-extent.csv", true, false);
     
