@@ -1,5 +1,4 @@
 #version 450 core
-#extension GL_ARB_explicit_attrib_location : require
 
 uniform mat4 transform;
 uniform vec4 default_color;

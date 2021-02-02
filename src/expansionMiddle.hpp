@@ -35,5 +35,5 @@ private:
 	int m_lineCount;
 	int m_attributeCount;
 
-	GraphApp* m_linkedApp;
+	std::shared_ptr<GraphApp> m_linkedApp;
 };
