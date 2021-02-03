@@ -29,31 +29,34 @@ void main() {
 	vec3 p3 = vec3(gl_in[1].gl_Position);
 
 	// compute intermediate vertices here
-	vec3 halfway_point = (p0 + p3) / 2;
-	float delta_half_height = abs(p0.y - p3.y) / 2;
-		
-	vec3 p1 = halfway_point;
-	vec3 p2 = halfway_point;
+	float intermediate_x = p0.x + 0.5 * (p3.x - p0.x);
+	vec3 p1 = vec3(intermediate_x, p0.y, p0.z);
+	vec3 p2 = vec3(intermediate_x, p3.y, p3.z);
 	
-	if(p0.y < p3.y){
-		p1.y -= delta_half_height;
-		p2.y += delta_half_height;
-	}
-	else{
-		p1.y += delta_half_height;
-		p2.y -= delta_half_height;
-	}
-
-
-	//gl_Position = vec4(bezier(gl_TessCoord.x, p0, p1, p2, p3), 1.0);
-	vec4 pos = vec4(bezier(gl_TessCoord.x, p0, p1, p2, p3), 1.0);
+	/** 
+	 *	determin needed scales:
+	 *  p0 = 0 * delta_y (no offset)
+	 *  p1 = 0.5 * delta_y (half way)
+	 *  p2 = 0.5 * delta_y (half way)
+	 *  p3 = 1 * delta_y (full offset)
+	**/
+	float delta_y = patch_from_range - patch_to_range;
+	float intermidiat_delta_y = delta_y * 0.5;
 	
-	float scale_y = (patch_from_range - patch_to_range) - (patch_from_range - patch_to_range) * gl_TessCoord.x;
-	
-	float from_y = remap(pos.y, vec2(-1,1), vec2(-patch_from_range, patch_from_range));
-	float to_y = remap(from_y, vec2(-patch_from_range, patch_from_range), vec2(-patch_to_range - scale_y, patch_to_range + scale_y));
+	float p0_actual_y = remap(p0.y, vec2(-1,1), vec2(-patch_from_range, patch_from_range));
+	float p1_actual_y = remap(p1.y, vec2(-1,1), vec2(-patch_from_range, patch_from_range));
+	float p2_actual_y = remap(p2.y, vec2(-1,1), vec2(-patch_from_range, patch_from_range));
+	float p3_actual_y = remap(p3.y, vec2(-1,1), vec2(-patch_to_range, patch_to_range));
 
-	gl_Position = patch_model * vec4(pos.x, to_y, 0, 1.0);
+	float p1_scaled_y = remap(p1_actual_y, vec2(-patch_from_range, patch_from_range), vec2(-patch_to_range - intermidiat_delta_y, patch_to_range + intermidiat_delta_y));
+	float p2_scaled_y = remap(p2_actual_y, vec2(-patch_from_range, patch_from_range), vec2(-patch_to_range - intermidiat_delta_y, patch_to_range + intermidiat_delta_y));
+
+	gl_Position = patch_model * vec4(bezier( gl_TessCoord.x, 
+											 vec3(p0.x, p0_actual_y, p0.z), 
+											 vec3(p1.x, p1_scaled_y, p1.z), 
+											 vec3(p2.x, p2_scaled_y, p2.z), 
+											 vec3(p3.x, p3_actual_y, p3.z)), 1.0);
+	
 	
 	// pass-through color
 	tes_color = patch_color;
