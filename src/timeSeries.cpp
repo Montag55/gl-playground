@@ -36,10 +36,6 @@ TimeSeries::TimeSeries(GraphApp* app):
     
     // model relative to Polylines scale
     m_draw_model = m_linkedApp->getModel();
-    
-    m_view = glm::mat4(1.0f);
-    m_projection = glm::mat4(1.0f);
-    //m_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 1000.0f);
 
     // init index vertex stuff
     initializeVertexBuffers();
@@ -146,10 +142,7 @@ void TimeSeries::updateSelections() {
 
 void TimeSeries::createEntry(TimeExpansion& entry) const{       
     setEntryCoords(entry);
-    
-    // set tilt angle since no '3D'
-    // entry.angle = 10.0f;
-    
+        
     // create middle section
     entry.middle = new ExpansionMiddle(
         entry.leftAxisIndex, 
@@ -184,15 +177,13 @@ void TimeSeries::setEntryCoords(TimeExpansion& entry) const {
     
     // rotate and shift time expansion to align with left axis
     entry.model_left = m_draw_model;
-    entry.model_left = glm::translate(entry.model_left, glm::vec3(0.0f, 0.0f, m_mouse_model[2][2]));
+    entry.model_left = glm::translate(entry.model_left, glm::vec3(axis[entry.leftAxisIndex], 0.0f, 0.0f));
     entry.model_left = glm::rotate(entry.model_left, glm::radians(90 - entry.angle), glm::vec3(0.0f, 1.0f, 0.0f));
-    entry.model_left = glm::translate(entry.model_left, glm::vec3(0.0f, 0.0f, axis[entry.leftAxisIndex]));
 
     // rotate and shift time expansion to align with right axis
     entry.model_right = m_draw_model;
-    entry.model_right = glm::translate(entry.model_right, glm::vec3(0.0f, 0.0f, m_mouse_model[2][2]));
+    entry.model_right = glm::translate(entry.model_right, glm::vec3(axis[entry.rightAxisIndex], 0.0f, 0.0f));
     entry.model_right = glm::rotate(entry.model_right, glm::radians(90 + entry.angle), glm::vec3(0.0f, 1.0f, 0.0f));
-    entry.model_right = glm::translate(entry.model_right, glm::vec3(0.0f, 0.0f, axis[entry.rightAxisIndex]));
 
     // place camera between axis
     entry.view = glm::lookAt(glm::vec3((axis[entry.leftAxisIndex] + axis[entry.rightAxisIndex]) * 0.5f, 0, 0),
@@ -283,7 +274,6 @@ bool TimeSeries::draw() const {
     glUseProgram(m_program);
     glDepthMask(GL_TRUE);
     
-    gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "projection"), glm::mat4(1.0f));
     gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "to_range"), glm::vec2(-1, 1));
     glProgramUniform1i(m_program, glGetUniformLocation(m_program, "num_data"), m_linkedApp->getData()->size() / m_num_timeAxis);
     glProgramUniform1i(m_program, glGetUniformLocation(m_program, "num_attrib"), m_linkedApp->getAxis()->size());
@@ -295,7 +285,6 @@ bool TimeSeries::draw() const {
     glPatchParameteri(GL_PATCH_VERTICES, 2);
     
     for (const auto& item : m_expansions) {
-        gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "view"), glm::mat4(1.0f));
         
         // draw left 
         glProgramUniform1i(m_program, glGetUniformLocation(m_program, "attribute_idx"), item.leftAxisIndex);
@@ -369,7 +358,6 @@ void TimeSeries::initializeIndexBuffers() {
 
 void TimeSeries::initializeStorageBuffers() {
     for (int i = 0; i < m_num_timeAxis; i++) {
-        //auto val = Utils::remap((float)i / (m_num_timeAxis - 1), glm::vec2{0, 1}, glm::vec2{-1, 1});
         auto val = (float)i / (m_num_timeAxis - 1);
         m_timeAxis.push_back(val);
     }

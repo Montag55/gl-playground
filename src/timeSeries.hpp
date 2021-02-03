@@ -37,8 +37,6 @@ private:
     GLuint m_addVisualizer_program;
     glm::mat4 m_draw_model; // scale of polyline
     glm::mat4 m_mouse_model; // scale of screen to polyine
-    glm::mat4 m_view;
-    glm::mat4 m_projection;
     GLuint m_vao;
     GLuint m_vbo;
     GLuint m_ibo;
