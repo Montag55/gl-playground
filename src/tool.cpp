@@ -5,6 +5,10 @@ Tool::Tool(GraphApp* app) :
 {	
 }
 
+Tool::~Tool() {
+	// delete m_linkedApp;
+}
+
 void Tool::setPriority(int prio) {
 	m_priotity = prio;
 }

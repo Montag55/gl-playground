@@ -145,7 +145,7 @@ void AxisDrag::updateAxis(const std::vector<float>& axis) {
         m_vertices.push_back(AxisVertex{glm::vec2(i + m_thickness / 2, -1.05), 0});
     }
 
-    glNamedBufferSubData(m_vbo, 0, Utils::vectorsizeof(m_vertices), m_vertices.data());
+    updateColors();
 }
 
 void AxisDrag::initializeVertexBuffers() {

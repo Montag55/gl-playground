@@ -57,7 +57,6 @@ void main() {
 											 vec3(p2.x, p2_scaled_y, p2.z), 
 											 vec3(p3.x, p3_actual_y, p3.z)), 1.0);
 	
-	
 	// pass-through color
 	tes_color = patch_color;
 }

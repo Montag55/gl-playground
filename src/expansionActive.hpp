@@ -13,7 +13,7 @@ class GraphApp;
 class ExpansionActive {
 public:
     ExpansionActive();
-	ExpansionActive(const int& leftIdx, const int& rightIdx, const GLuint& program, GraphApp* app);
+ ExpansionActive(const int& leftIdx, const int& rightIdx, const GLuint& program, std::shared_ptr<GraphApp> app);
 	~ExpansionActive();
     void draw() const;
     void setActive(const bool& state) const;

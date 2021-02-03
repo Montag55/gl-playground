@@ -5,7 +5,7 @@
 
 ExpansionMiddle::ExpansionMiddle() {}
 
-ExpansionMiddle::ExpansionMiddle(const int& leftAxisIndex, const int& rightAxisIndex, const int& lineCount, const int& attributeCount, const GLuint& program, GraphApp* app) :
+ExpansionMiddle::ExpansionMiddle(const int& leftAxisIndex, const int& rightAxisIndex, const int& lineCount, const int& attributeCount, const GLuint& program, std::shared_ptr<GraphApp> app) :
 	m_leftDepthIndex{0}, 
 	m_rightDepthIndex{0},
 	m_axis{std::vector<float>{-1, 1}},
