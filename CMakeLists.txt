@@ -35,6 +35,7 @@ add_executable( graph
     src/timeSeries.cpp
     src/expansionMiddle.cpp
     src/expansionActive.cpp
+    src/expansionHandles.cpp
     src/graphApp.cpp  )
 target_link_libraries(graph ${LIBRARIES})
 

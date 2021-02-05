@@ -1,8 +1,6 @@
 #version 450 core
 
 uniform mat4 transform;
-uniform mat4 view;
-uniform mat4 projection;
 
 uniform int num_data;
 uniform int num_attrib;

@@ -14,7 +14,7 @@ float fadeEaseInOut(){
 }
 
 void main() {
-	gl_Position = transform * vec4(in_pos, 1.0, 1.0);
+	gl_Position = transform * vec4(in_pos, 0.0, 1.0);
 	
 	// pass-through color
 	if(in_color_idx == 0){

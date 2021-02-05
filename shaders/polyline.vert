@@ -2,10 +2,12 @@
 
 uniform mat4 transform;
 uniform int num_attributes;
+uniform int num_data;
 uniform vec2 to_range;
 
 layout(location = 0) in float in_id;
 layout(location = 1) in float in_attribute;
+layout(location = 2) in float in_time;
 
 layout(location = 0) out vec4 vs_color;
 
@@ -31,7 +33,7 @@ float remap(float value, vec2 from, vec2 to) {
 }
 
 void main() {
-	int _dataIndex = int(num_attributes) * int(in_id) + int(in_attribute);
+	int _dataIndex = int(num_attributes) * int(in_id) + int(in_attribute) + num_data * int(in_time);
 	float _value = values[_dataIndex];
 	float _norm = remap(_value, ranges[int(in_attribute)], to_range);
 	

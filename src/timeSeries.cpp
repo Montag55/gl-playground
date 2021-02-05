@@ -26,6 +26,9 @@ TimeSeries::TimeSeries(GraphApp* app):
     frag_shader = gl::load_shader_from_file("shaders/axis.frag", GL_FRAGMENT_SHADER);
     m_addVisualizer_program = gl::create_program({vert_shader, frag_shader});
 
+    vert_shader = gl::load_shader_from_file("shaders/expansion_handle.vert", GL_VERTEX_SHADER);
+    m_handle_program = gl::create_program({vert_shader, frag_shader});
+
     
     // model relative to screen space
     m_mouse_model = glm::scale(glm::mat4{1.0f}, glm::vec3{
@@ -133,7 +136,7 @@ bool TimeSeries::checkSelection(const glm::vec2& cursor) {
 }
 
 void TimeSeries::updateSelections() {
-    // update middle part of all expansions to updat contained axis
+    // update middle part of all expansions to update contained axis
     for (const auto& entry : m_expansions) {
         entry.middle->updateAxis(entry.middleAxisIndicies);
         entry.addVisualizer->setActive(false);
@@ -141,7 +144,6 @@ void TimeSeries::updateSelections() {
 }
 
 void TimeSeries::createEntry(TimeExpansion& entry) const{       
-    setEntryCoords(entry);
         
     // create middle section
     entry.middle = new ExpansionMiddle(
@@ -152,14 +154,31 @@ void TimeSeries::createEntry(TimeExpansion& entry) const{
         m_middle_program,
         m_linkedApp
     );
-
+    
+    // create highlighter
     entry.addVisualizer = new ExpansionActive(
         entry.leftAxisIndex, 
         entry.rightAxisIndex,
         m_addVisualizer_program,
         m_linkedApp
     );
+    
+    // create left handle
+    entry.left_handle = new ExpansionHandles{
+        0,
+        entry.model_left, 
+        m_handle_program
+    };
+    
+    // create right handle
+    entry.right_handle = new ExpansionHandles{
+        0,
+        entry.model_right,
+        m_handle_program
+    };
 
+    setEntryCoords(entry);
+    
     // add entry as as expansion
     TimeSeries* ptr = const_cast<TimeSeries*>(this);
     ptr->m_expansions.push_back(entry);
@@ -189,6 +208,10 @@ void TimeSeries::setEntryCoords(TimeExpansion& entry) const {
     entry.view = glm::lookAt(glm::vec3((axis[entry.leftAxisIndex] + axis[entry.rightAxisIndex]) * 0.5f, 0, 0),
                            glm::vec3((axis[entry.leftAxisIndex] + axis[entry.rightAxisIndex]) * 0.5f, 0, -1),
                            glm::vec3(0.0f, 1.0f, 0.0f));
+    
+    // update handle models
+    entry.left_handle->updateVertecies(entry.model_left);
+    entry.right_handle->updateVertecies(entry.model_right);
 }
 
 void TimeSeries::updateEntries() const {
@@ -301,7 +324,9 @@ bool TimeSeries::draw() const {
 
     // draw all middles before left rights since they use axis ssbo from linked app
     for (const auto& item : m_expansions) {
-        // item.middle->draw();
+        //item.middle->draw();
+        item.left_handle->draw();
+        item.right_handle->draw();
         item.addVisualizer->draw();
     }
 

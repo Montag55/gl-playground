@@ -8,6 +8,7 @@
 #include <variant>
 #include <expansionMiddle.hpp>
 #include <expansionActive.hpp>
+#include <expansionHandles.hpp>
 
 const double DOUBLECLICK_TIME_MS = 333;
 
@@ -25,9 +26,15 @@ enum MouseState {
     Default = 4
 };
 
+enum Handle {
+    LeftHandle = 0,
+    RightHandle = 1
+};
+
 struct Vertex {
     float id;               // should be uint
     float attIndx;          // should be uint
+    float timeIndx;         // should be unit
 };
 
 struct MouseStatus {
@@ -62,6 +69,8 @@ struct SortObj {
 };
 
 class ExpansionMiddle;
+class ExpansionActive;
+class ExpansionHandles;
 struct TimeExpansion {
     int leftAxisIndex; // left '3D' expansion axis ID
     int rightAxisIndex; // right '3D' expansion axis ID
@@ -75,4 +84,6 @@ struct TimeExpansion {
     
     ExpansionMiddle* middle; // middle section for this entry
     ExpansionActive* addVisualizer; // highlighter when adding axis to expansion
+    ExpansionHandles* left_handle; // left handles for this entry
+    ExpansionHandles* right_handle; // left handles for this entry
 };

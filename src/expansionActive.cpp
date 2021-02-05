@@ -68,10 +68,10 @@ void ExpansionActive::initializeVertexBuffers() {
     glVertexArrayAttribBinding(m_vao, y_coord_attrib_idx, 0);
 
     m_vertices = std::vector<Vertex>{
-		Vertex{float(m_leftAxisIndex), 1.05f},
-		Vertex{float(m_rightAxisIndex), 1.05f},
-		Vertex{float(m_leftAxisIndex), -1.05f},
-		Vertex{float(m_rightAxisIndex), -1.05f}
+		Vertex{float(m_leftAxisIndex), 1.05f, 0.0f},
+		Vertex{float(m_rightAxisIndex), 1.05f, 0.0f},
+		Vertex{float(m_leftAxisIndex), -1.05f, 0.0f},
+		Vertex{float(m_rightAxisIndex), -1.05f, 0.0f}
 	};
 
     glNamedBufferData(m_vbo, Utils::vectorsizeof(m_vertices), m_vertices.data(), GL_DYNAMIC_DRAW);

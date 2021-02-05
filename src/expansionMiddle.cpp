@@ -77,6 +77,7 @@ void ExpansionMiddle::draw() const {
     gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "transform"), glm::scale(glm::mat4{1.0f}, glm::vec3{0.8f}));
     gl::set_program_uniform(m_program, glGetUniformLocation(m_program, "to_range"), glm::vec2(-1, 1));
     glProgramUniform1i(m_program, glGetUniformLocation(m_program, "num_attributes"), m_linkedApp->getAxis()->size());
+    glProgramUniform1i(m_program, glGetUniformLocation(m_program, "num_attributes"), m_linkedApp->getData()->size() / *m_linkedApp->getNumTimeAxis());
 
     // bind VAO with all vertecies in there
     glBindVertexArray(*m_linkedApp->getVAO());

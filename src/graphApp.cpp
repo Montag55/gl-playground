@@ -172,11 +172,17 @@ void GraphApp::initializeVertexBuffers() {
     glVertexArrayAttribFormat(m_vao, att_attrib_idx, 1, GL_FLOAT, false, offsetof(Vertex, attIndx));
     glVertexArrayAttribBinding(m_vao, att_attrib_idx, 0);
 
+    GLuint time_attrib_idx = 2;
+    glEnableVertexArrayAttrib(m_vao, time_attrib_idx);
+    glVertexArrayAttribFormat(m_vao, time_attrib_idx, 1, GL_FLOAT, false, offsetof(Vertex, timeIndx));
+    glVertexArrayAttribBinding(m_vao, time_attrib_idx, 0);
+
     // setup vertices
     for (int i = 0; i < m_data.size() / m_num_timeAxis; i++) {
         m_vertices.push_back( Vertex{
             float(i / m_axis.size()),
-            float(i % m_axis.size())
+            float(i % m_axis.size()),
+            0.0f
         });
     }
 
@@ -236,6 +242,7 @@ void GraphApp::drawPolyLines() const {
     gl::set_program_uniform(m_polyline_program, glGetUniformLocation(m_polyline_program, "transform"), m_model);
     gl::set_program_uniform(m_polyline_program, glGetUniformLocation(m_polyline_program, "to_range"), glm::vec2(-1, 1));
     glProgramUniform1i(m_polyline_program, glGetUniformLocation(m_polyline_program, "num_attributes"), m_axis.size());
+    glProgramUniform1i(m_polyline_program, glGetUniformLocation(m_polyline_program, "num_data"), m_data.size() / m_num_timeAxis);
         
     // bind buffers eventhough they were never unbinded, just to be sure
     glBindVertexArray(m_vao);
@@ -286,14 +293,14 @@ void GraphApp::mouseEventListener() const {
             current.distance = 0.0f;
         }
         // left-mouse down - ONGOING
-        else if(m_prevMouseState.buttons[Left] && current.buttons[Left]){
+        else if (m_prevMouseState.buttons[Left] && current.buttons[Left]) {
             // Set mouse state to drag
             current.state = Drag;
             // reporting moved mouse distance
             current.distance = m_prevMouseState.distance + glm::distance(m_prevMouseState.pos, current.pos);
         }
         // left-mouse down - END
-        else if (m_prevMouseState.buttons[Left] && !current.buttons[Left]){
+        else if (m_prevMouseState.buttons[Left] && !current.buttons[Left]) {
             // Set mouse state to release
             current.state = Release;
         }
