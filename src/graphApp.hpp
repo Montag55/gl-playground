@@ -27,6 +27,8 @@ class GraphApp :
     void updateColor(const std::vector<int>& ids, bool reset = false) const;
     void updateAxis(const std::vector<float>& axis) const;
     void updateVertexIndicies() const;
+    void updateOrder(const std::vector<int>& order) const;
+    void updateExcludedAxis(const std::vector<int>& axis) const;
     const std::vector<Vertex>* getVertecies();
     const std::vector<unsigned short>* getIndicies();
     const std::vector<float>* getAxis();
@@ -39,8 +41,7 @@ class GraphApp :
     const GLuint* getVAO();
     const GLuint* getAttribute_SSBO();
     const int* getNumTimeAxis();
-    void updateOrder(const std::vector<int>& order) const;
-    void updateExcludedAxis(const std::vector<int>& axis) const;
+    const MouseStatus* getPrevMouseState();
 
 private: 
 	std::vector<float> initializeData();

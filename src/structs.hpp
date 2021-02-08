@@ -63,6 +63,13 @@ struct AxisVertex {
     float colorIndx;
 };
 
+struct NonAABB {
+    glm::vec2 uL;
+    glm::vec2 uR;
+    glm::vec2 lL;
+    glm::vec2 lR;
+};
+
 struct SortObj {
     float val;
     int index;
@@ -87,3 +94,4 @@ struct TimeExpansion {
     ExpansionHandles* left_handle; // left handles for this entry
     ExpansionHandles* right_handle; // left handles for this entry
 };
+

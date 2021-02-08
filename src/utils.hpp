@@ -105,6 +105,26 @@ namespace Utils{
         return false;
 	}
 
+	inline float sign(const glm::vec2& p1, const glm::vec2& p2, const glm::vec2& p3) {
+          return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+    }
+
+	inline bool insideNonAABB(const glm::vec2& point, const NonAABB& rect) {
+		float d1, d2, d3, d4;
+		bool has_neg, has_pos;
+
+		d1 = sign(point, rect.uL, rect.uR);
+		d2 = sign(point, rect.uR, rect.lR);
+		d3 = sign(point, rect.lR, rect.lL);
+		d4 = sign(point, rect.lL, rect.uL);
+		
+
+		has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0) || (d4 < 0);
+		has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0) || (d4 > 0);
+
+		return !(has_neg && has_pos);
+	}
+
 	inline double ellapsedTime(const std::chrono::time_point<std::chrono::system_clock>& start, const std::chrono::time_point<std::chrono::system_clock>& end) {
 		return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	}

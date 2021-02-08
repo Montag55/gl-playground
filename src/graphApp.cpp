@@ -310,20 +310,29 @@ void GraphApp::mouseEventListener() const {
     switch (current.state) {
         case Click: 
             // set boxselection tool starting location
-            if(!m_axisDrag_tool->updateSelection(m_prevMouseState.pos, current.pos))
-                m_boxSelect_tool->setSelectionOrigin_callback(current.pos);
+            if(!m_axisDrag_tool->updateSelection(m_prevMouseState.pos, current.pos) && 
+               !m_timeSeries_tool->updateHandles(m_prevMouseState.pos, current.pos)) {
+               
+                 m_boxSelect_tool->setSelectionOrigin_callback(current.pos);
+            }
             break;
         case Drag:
             // upate boxselection tool here
-            if(!m_axisDrag_tool->updateSelection(m_prevMouseState.pos, current.pos))
+            if (!m_axisDrag_tool->updateSelection(m_prevMouseState.pos, current.pos) &&
+                !m_timeSeries_tool->updateHandles(m_prevMouseState.pos, current.pos)) {
+                
                 m_boxSelect_tool->updateSelection_callback(current.pos); 
+            }
             break;
         case Release:
             // clear boxselection tool here and update all time expansions
-            if (!m_axisDrag_tool->updateSelection(m_prevMouseState.pos, current.pos)) 
+            if (!m_axisDrag_tool->updateSelection(m_prevMouseState.pos, current.pos) &&
+                !m_timeSeries_tool->updateHandles(m_prevMouseState.pos, current.pos)) {
+            
                 m_boxSelect_tool->stopSelection_callback();
+            } 
             else
-                m_timeSeries_tool->updateSelections();
+                 m_timeSeries_tool->updateSelections();
                   
             break;
         case Double_Click:
@@ -333,6 +342,7 @@ void GraphApp::mouseEventListener() const {
         default:
             // check if mouse over axis
             m_axisDrag_tool->checkSelection();
+            m_timeSeries_tool->checkHandles();
             break;
     }
     ptr->m_prevMouseState = current;
@@ -469,6 +479,10 @@ const GLuint* GraphApp::getVAO() {
 
 const GLuint* GraphApp::getAttribute_SSBO() {
     return &m_attribute_ssbo;
+}
+
+const MouseStatus* GraphApp::getPrevMouseState() {
+    return &m_prevMouseState;
 }
 
 int main() {

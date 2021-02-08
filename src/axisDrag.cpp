@@ -80,7 +80,7 @@ bool AxisDrag::checkSelection() {
             m_vertices[i * 4 + 3].pos // lower right 
         };
         
-        if (Utils::insideAABB(ss_pos, axis_rect)) {
+        if (Utils::insideAABB(ss_pos, axis_rect)) {            
             current[i] = true;
             result = true;
         }

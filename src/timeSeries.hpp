@@ -21,6 +21,8 @@ public:
     bool registerTool() override;
     bool checkSelection(const glm::vec2& cursor);
     void updateSelections();
+    bool updateHandles(const glm::vec2& prev, const glm::vec2& current);
+    void checkHandles();
     
 private:
     void createEntry(TimeExpansion& entry) const;

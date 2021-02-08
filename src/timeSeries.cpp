@@ -143,6 +143,23 @@ void TimeSeries::updateSelections() {
     }
 }
 
+bool TimeSeries::updateHandles(const glm::vec2& prev, const glm::vec2& current) {
+    bool moving_handle = false;
+    for (const auto& entry : m_expansions) {
+        moving_handle = moving_handle || entry.left_handle->updateSelection(prev, current, -entry.angle);
+        moving_handle = moving_handle || entry.right_handle->updateSelection(prev, current, entry.angle);
+    }
+    return moving_handle;
+}
+
+void TimeSeries::checkHandles() {
+    // check if mouse over any handle
+    for (const auto& entry : m_expansions) {
+        entry.left_handle->checkSelection(); 
+        entry.right_handle->checkSelection(); 
+    }
+}
+
 void TimeSeries::createEntry(TimeExpansion& entry) const{       
         
     // create middle section
@@ -167,14 +184,16 @@ void TimeSeries::createEntry(TimeExpansion& entry) const{
     entry.left_handle = new ExpansionHandles{
         0,
         entry.model_left, 
-        m_handle_program
+        m_handle_program,
+        m_linkedApp
     };
     
     // create right handle
     entry.right_handle = new ExpansionHandles{
         0,
         entry.model_right,
-        m_handle_program
+        m_handle_program,
+        m_linkedApp
     };
 
     setEntryCoords(entry);
@@ -292,6 +311,12 @@ bool TimeSeries::draw() const {
     
     // update all entrys according to their respectiv axis
     updateEntries();
+    
+    // draw axis befor lines
+    for (const auto& item : m_expansions) {
+        item.left_handle->draw();
+        item.right_handle->draw();
+    }
    
     // now here render that stuff
     glUseProgram(m_program);
@@ -322,11 +347,9 @@ bool TimeSeries::draw() const {
       
     glDepthMask(GL_FALSE);
 
-    // draw all middles before left rights since they use axis ssbo from linked app
+    // draw active indicator and middle over lines
     for (const auto& item : m_expansions) {
         //item.middle->draw();
-        item.left_handle->draw();
-        item.right_handle->draw();
         item.addVisualizer->draw();
     }
 
