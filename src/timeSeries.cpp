@@ -138,7 +138,7 @@ bool TimeSeries::checkSelection(const glm::vec2& cursor) {
 void TimeSeries::updateSelections() {
     // update middle part of all expansions to update contained axis
     for (const auto& entry : m_expansions) {
-        entry.middle->updateAxis(entry.middleAxisIndicies);
+        entry.middle->updateAxisOrder(entry.middleAxisIndicies);
         entry.addVisualizer->setActive(false);
     }
 }
@@ -161,17 +161,7 @@ void TimeSeries::checkHandles() {
 }
 
 void TimeSeries::createEntry(TimeExpansion& entry) const{       
-        
-    // create middle section
-    entry.middle = new ExpansionMiddle(
-        entry.leftAxisIndex, 
-        entry.rightAxisIndex, 
-        m_linkedApp->getData()->size() / m_linkedApp->getAxis()->size() / m_num_timeAxis,
-        m_linkedApp->getAxis()->size(),
-        m_middle_program,
-        m_linkedApp
-    );
-    
+           
     // create highlighter
     entry.addVisualizer = new ExpansionActive(
         entry.leftAxisIndex, 
@@ -182,7 +172,6 @@ void TimeSeries::createEntry(TimeExpansion& entry) const{
     
     // create left handle
     entry.left_handle = new ExpansionHandles{
-        0,
         entry.model_left, 
         m_handle_program,
         m_linkedApp
@@ -190,11 +179,20 @@ void TimeSeries::createEntry(TimeExpansion& entry) const{
     
     // create right handle
     entry.right_handle = new ExpansionHandles{
-        0,
         entry.model_right,
         m_handle_program,
         m_linkedApp
     };
+
+    // create middle section
+    entry.middle = new ExpansionMiddle(
+        entry.leftAxisIndex, 
+        entry.rightAxisIndex,
+        entry.left_handle,
+        entry.right_handle,
+        m_middle_program,
+        m_linkedApp
+    );
 
     setEntryCoords(entry);
     
@@ -273,7 +271,7 @@ void TimeSeries::updateEntries() const {
                 entry.middleAxisIndicies.erase(it);
                 entry.addVisualizer->setActive(false);
                 // remove entry when draged outside immidiately
-                entry.middle->updateAxis(entry.middleAxisIndicies);
+                entry.middle->updateAxisOrder(entry.middleAxisIndicies);
                 ptr->updateParentIndicies();
             }
         }
@@ -349,7 +347,7 @@ bool TimeSeries::draw() const {
 
     // draw active indicator and middle over lines
     for (const auto& item : m_expansions) {
-        //item.middle->draw();
+        item.middle->draw();
         item.addVisualizer->draw();
     }
 

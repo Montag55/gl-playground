@@ -6,9 +6,8 @@
 
 ExpansionHandles::ExpansionHandles() {}
 
-ExpansionHandles::ExpansionHandles(const int& index, const glm::mat4& model, const GLuint& program, std::shared_ptr<GraphApp> app) : 
+ExpansionHandles::ExpansionHandles(const glm::mat4& model, const GLuint& program, std::shared_ptr<GraphApp> app) : 
     m_program{program},
-    m_axisIndex{index},
     m_bb{std::unique_ptr<NonAABB>(new NonAABB{})},
     m_linkedApp{app}
 {  
@@ -134,6 +133,9 @@ void ExpansionHandles::updateVertecies(const glm::mat4& model) const {
         ptr->m_bb->lL = m_bb->lR;
         ptr->m_bb->lR = tmp;
     }
+    
+    // set x-pos of handle (already scaled by draw model)
+    ptr->m_pos = (m_vertices[0].pos.x + m_vertices[1].pos.x) / 2;
 
     glNamedBufferSubData(m_vbo, 0, Utils::vectorsizeof(m_vertices), m_vertices.data());
 }
@@ -145,3 +147,12 @@ void ExpansionHandles::initializeIndexBuffer() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, Utils::vectorsizeof(m_indicies), m_indicies.data(), GL_STATIC_DRAW);
 }
 
+const float ExpansionHandles::getHandleTime() {
+    return m_handle;
+}
+
+const float ExpansionHandles::getHandlePos() {
+    // draw model matrix already applied
+    // -> actual screen coord
+    return m_pos;
+}

@@ -51,9 +51,8 @@ void main() {
 	
 	gl_Position = vec4(time_coords[int(in_time)], _norm, 0, 1.0);
 	
-	
 	// pass-through depth scaling
-	float depth_val = remap((1 - in_time / (num_attrib - 1)), vec2(0, 1), vec2(0.125, 1));
+	float depth_val = remap((1 - int(in_time) / float(num_times - 1)), vec2(0, 1), vec2(0.125, 1));
 	vs_range = depth_val;
 
 	// pass-through color

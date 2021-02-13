@@ -15,12 +15,14 @@ class GraphApp;
 class ExpansionHandles {
 public:
     ExpansionHandles();
-    ExpansionHandles(const int& index, const glm::mat4& model, const GLuint& program, std::shared_ptr<GraphApp> app);
+    ExpansionHandles(const glm::mat4& model, const GLuint& program, std::shared_ptr<GraphApp> app);
     ~ExpansionHandles();
     void updateVertecies(const glm::mat4& model) const;
     bool updateSelection(const glm::vec2& prev, const glm::vec2& current, const float& angle) const;
     void draw() const;
     void checkSelection();
+    const float getHandleTime();
+    const float getHandlePos();
 
 private:
     void initializeVertexBuffers();
@@ -33,12 +35,12 @@ private:
     GLuint m_ibo;
     GLuint m_axis_ssbo;    
     
-    std::vector<AxisVertex> m_vertices;
-    std::vector<unsigned short> m_indicies;
     float m_handle;
     float m_thickness;
-    int m_axisIndex;
     bool m_active;
+    float m_pos;
+    std::vector<AxisVertex> m_vertices;
+    std::vector<unsigned short> m_indicies;
     glm::vec4 m_default_color;
     glm::vec4 m_active_color;
     std::unique_ptr<NonAABB> m_bb;

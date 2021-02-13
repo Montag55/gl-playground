@@ -3,7 +3,7 @@
 GraphApp::GraphApp() : 
     Application{}, 
     m_num_attributes{4},
-    m_num_timeAxis{4},
+    m_num_timeAxis{5},
     m_model{glm::scale(glm::mat4{1.0f}, glm::vec3{0.8f})},
     m_data{initializeData()}, // init for tools
     m_axis{initializeAxis()},  // init for tools
@@ -30,6 +30,7 @@ GraphApp::GraphApp() :
     
     // activate color blending and setup background color
     m_clear_color = glm::vec3(0.125, 0.133, 0.156);
+    //m_clear_color = glm::vec3(1, 1, 1);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
 }
@@ -87,14 +88,22 @@ std::vector<float> GraphApp::initializeData() {
     
     //Utils::readData(tmp, "../iris.txt", false, true);
     Utils::readData(tmp, "../../iris.txt", false, true);
-    // Utils::readData(tmp, "../../sea-ice-extent-annually.csv", true, false);
-    // Utils::readData(tmp, "../../sea-ice-extent.csv", true, false);
+    //Utils::readData(tmp, "../../sea-ice-extent-annually.csv", true, false);
+    //Utils::readData(tmp, "../../sea-ice-extent.csv", true, false);
     
     // replace with actual time data
     // appending same data over and over again
     int size = tmp.size();
-    for (int i = 0; i < m_num_timeAxis - 1; i++) {
+    /*for (int i = 0; i < m_num_timeAxis - 1; i++) {
         tmp.insert(tmp.end(), tmp.begin(), tmp.begin() + size);
+    }*/
+
+    for (int att = 0; att < m_num_attributes; att++) {
+        std::vector<float> att_tmp;
+        for (int id = 0; id < size / m_num_attributes; id++) {
+              att_tmp.push_back(tmp[id * m_num_attributes + att]);
+        }
+        tmp.insert(tmp.end(), att_tmp.begin(), att_tmp.begin());
     }
     
     spdlog::debug("data size {}", tmp.size());
