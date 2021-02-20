@@ -74,7 +74,7 @@ bool Application::update() {
 bool Application::draw() const {
   glViewport(0, 0, m_resolution.x, m_resolution.y);
   glClearColor(m_clear_color.r, m_clear_color.g, m_clear_color.b, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT);
   return true;
 }
 

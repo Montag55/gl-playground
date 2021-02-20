@@ -6,21 +6,21 @@
 #include <gl/program.hpp>
 #include <gl/shader.hpp>
 
-#include <tool.hpp>
 #include <structs.hpp>
 #include <utils.hpp>
 #include <graphApp.hpp>
 #include <list>
 #include <functional>
 
-class BoxSelect : Tool {
+class GraphApp;
+
+class BoxSelect {
 public:
     BoxSelect(GraphApp* app);
     ~BoxSelect();
     void initializeVertexBuffers();
     void clearSelection() const;
-    bool draw() const override;
-    bool registerTool() override;
+    bool draw() const;
     std::vector<int> checkIntersection() const;
     
     void stopSelection_callback() const;
@@ -38,6 +38,8 @@ public:
     glm::vec4 m_selection_color;
     AABB m_selectionArea;
     bool m_active;
+
+    std::shared_ptr<GraphApp> m_linkedApp;
 };
 
 

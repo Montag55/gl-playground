@@ -8,7 +8,7 @@ bool operator==(const TimeExpansion& a, const TimeExpansion& b) {
 }
 
 TimeSeries::TimeSeries(GraphApp* app):
-	Tool(app), 
+	m_linkedApp{app},
     m_num_timeAxis{*app->getNumTimeAxis()}
  {
     auto vert_shader = gl::load_shader_from_file("shaders/timeseries.vert", GL_VERTEX_SHADER);
@@ -45,8 +45,7 @@ TimeSeries::TimeSeries(GraphApp* app):
     initializeIndexBuffers();
     initializeStorageBuffers();
     
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_ALWAYS);
+    spdlog::debug("TimeSeries initialized.");
 }
 
 TimeSeries::~TimeSeries() {
@@ -351,10 +350,6 @@ bool TimeSeries::draw() const {
         item.addVisualizer->draw();
     }
 
-	return true;
-}
-
-bool TimeSeries::registerTool() {
 	return true;
 }
 

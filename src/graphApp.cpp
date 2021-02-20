@@ -7,7 +7,7 @@ GraphApp::GraphApp() :
     m_model{glm::scale(glm::mat4{1.0f}, glm::vec3{0.9f})},
     m_data{initializeData()}, // init for tools
     m_axis{initializeAxis()},  // init for tools
-    m_ranges{initializeRanges()},  // init for tools
+    m_ranges{initializeRanges()}, // init for tools
     m_boxSelect_tool{new BoxSelect(this)},  // enable boxSelection tool
     m_axisDrag_tool{new AxisDrag(this)},    // enable axisDrag tool
     m_timeSeries_tool{new TimeSeries(this)} // enable timeSeries tool
@@ -27,10 +27,11 @@ GraphApp::GraphApp() :
     // init gpu buffers
     initializeVertexBuffers();
     initializeStorageBuffers();
-    
+
     // activate color blending and setup background color
     m_clear_color = glm::vec3(0.125, 0.133, 0.156);
     //m_clear_color = glm::vec3(1, 1, 1);
+    
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
 }
@@ -67,7 +68,6 @@ GraphApp::~GraphApp() {
 
 bool GraphApp::draw() const {
     Application::draw();
-    glEnable(GL_DEPTH_TEST);
 
     mouseEventListener();
     
@@ -86,8 +86,8 @@ bool GraphApp::draw() const {
 std::vector<float> GraphApp::initializeData() {
     std::vector<float> tmp;
     
-    //Utils::readData(tmp, "../iris.txt", false, true);
-    Utils::readData(tmp, "../../iris.txt", false, true);
+    Utils::readData(tmp, "../iris.txt", false, true);
+    //Utils::readData(tmp, "../../iris.txt", false, true);
     //Utils::readData(tmp, "../../sea-ice-extent-annually.csv", true, false);
     //Utils::readData(tmp, "../../sea-ice-extent.csv", true, false);
     

@@ -31,7 +31,6 @@ add_executable( graph
     src/gl/shader.cpp
     src/boxSelect.cpp
     src/axisDrag.cpp
-    src/tool.cpp
     src/timeSeries.cpp
     src/expansionMiddle.cpp
     src/expansionActive.cpp

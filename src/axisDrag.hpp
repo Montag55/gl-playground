@@ -3,14 +3,14 @@
 #include <structs.hpp>
 #include <utils.hpp>
 #include <graphApp.hpp>
-#include <tool.hpp>
 
-class AxisDrag : Tool {
+class GraphApp;
+
+class AxisDrag {
 public:
 	AxisDrag(GraphApp* app);
 	~AxisDrag();
-	bool draw() const override;
-	bool registerTool() override;
+	bool draw() const ;
 	bool checkSelection();
 	bool updateSelection(const glm::vec2& prev, const glm::vec2& current);
 	
@@ -36,4 +36,5 @@ private:
 	glm::vec4 m_default_color;
 	glm::vec4 m_active_color;
 
+	std::shared_ptr<GraphApp> m_linkedApp;
 };

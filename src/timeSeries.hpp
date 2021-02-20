@@ -5,7 +5,6 @@
 #include <gl/program.hpp>
 #include <gl/shader.hpp>
 
-#include <tool.hpp>
 #include <structs.hpp>
 #include <utils.hpp>
 #include <graphApp.hpp>
@@ -13,12 +12,13 @@
 #include <list>
 #include <functional>
 
-class TimeSeries : Tool {
+class GraphApp;
+
+class TimeSeries {
 public:
     TimeSeries(GraphApp* app);
 	~TimeSeries();
-    bool draw() const override;
-    bool registerTool() override;
+    bool draw() const;
     bool checkSelection(const glm::vec2& cursor);
     void updateSelections();
     bool updateHandles(const glm::vec2& prev, const glm::vec2& current);
@@ -53,4 +53,6 @@ private:
     std::vector<float> m_timeAxis;
     std::vector<int> m_excludedAxis; // left & right
     std::vector<int> m_middleAxis;  // middle
+
+    std::shared_ptr<GraphApp> m_linkedApp;
 };

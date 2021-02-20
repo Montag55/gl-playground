@@ -1,7 +1,7 @@
 #include <boxSelect.hpp>
 
 BoxSelect::BoxSelect(GraphApp* app) :
-    Tool{app}
+    m_linkedApp{app}
 {
     auto vert_shader = gl::load_shader_from_file("shaders/selection_rect.vert", GL_VERTEX_SHADER);
     auto frag_shader = gl::load_shader_from_file("shaders/selection_rect.frag", GL_FRAGMENT_SHADER);
@@ -16,6 +16,8 @@ BoxSelect::BoxSelect(GraphApp* app) :
     
     // init gpu buffers
     initializeVertexBuffers();
+
+    spdlog::debug("BoxSelect initialized.");
 }
 
 BoxSelect::~BoxSelect() {
@@ -102,25 +104,6 @@ bool BoxSelect::draw() const {
     glBindVertexArray(m_vao);
     glDrawArrays(GL_LINE_LOOP, 0, m_vertices.size());
 
-    return true;
-}
-
-bool BoxSelect::registerTool() {
-    /*m_linkedApp->registerCallbacks(Callback<BoxSelect*, BS_VEC>{
-        this,
-        &BoxSelect::updateSelection_callback
-    });
-
-    m_linkedApp->registerCallbacks(Callback<BoxSelect*, BS_VEC>{
-        this,
-        &BoxSelect::setSelectionOrigin_callback
-    });
-
-    m_linkedApp->registerCallbacks(Callback<BoxSelect*, BS_EMPTY>{
-        this,
-        &BoxSelect::stopSelection_callback
-    });*/
-    
     return true;
 }
   

@@ -1,8 +1,7 @@
 #include <axisDrag.hpp>
 
 AxisDrag::AxisDrag(GraphApp* app) :
-	Tool{app},
-    m_axis_status{std::vector<bool>(m_linkedApp->getAxis()->size(), false)}
+	m_linkedApp{app}
 {
     auto vert_shader = gl::load_shader_from_file("shaders/axis.vert", GL_VERTEX_SHADER);
     auto frag_shader = gl::load_shader_from_file("shaders/axis.frag", GL_FRAGMENT_SHADER);
@@ -22,6 +21,7 @@ AxisDrag::AxisDrag(GraphApp* app) :
     m_thickness = 0.05f;
     m_default_color = glm::vec4(0.180, 0.215, 0.298, 0.2);
 	m_active_color = glm::vec4(0.180, 0.215, 0.298, 0.4);
+    m_axis_status = std::vector<bool>(m_linkedApp->getAxis()->size(), false);
     
     // initialize axis order [0,1,2,3,...]
     for (int i = 0; i < m_linkedApp->getAxis()->size(); i++) {
@@ -30,6 +30,8 @@ AxisDrag::AxisDrag(GraphApp* app) :
     
     initializeVertexBuffers();
     initializeIndexBuffer();
+
+    spdlog::debug("AxisDrag initialized.");
 }
 
 AxisDrag::~AxisDrag() {
@@ -57,10 +59,6 @@ bool AxisDrag::draw() const {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
     glDrawElements(GL_TRIANGLE_STRIP, m_indicies.size(), GL_UNSIGNED_SHORT, (const void*) 0);
     
-    return true;
-}
-
-bool AxisDrag::registerTool() {
     return true;
 }
 
